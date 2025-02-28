@@ -16,4 +16,6 @@
 
   # example-package = pkgs.callPackage ./pkgs/example-package { };
   xdman8 = pkgs.libsForQt5.callPackage ./pkgs/xdman8 { };
+  abdm = pkgs.callPackage ./pkgs/abdm { };
+
 }
