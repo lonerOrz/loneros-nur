@@ -1,4 +1,23 @@
-{ autoPatchelfHook, makeWrapper, lib, stdenv, fetchurl, openjdk, zlib, alsa-lib, libglvnd, libXi, freetype, libXtst, libXrender, libX11, libXext, fontconfig, dpkg }:
+{ 
+  autoPatchelfHook,
+  makeWrapper,
+  lib,
+  stdenv,
+  fetchurl,
+  openjdk,
+  zlib,
+  alsa-lib,
+  libglvnd,
+  libXi,
+  freetype,
+  libXtst,
+  libXrender,
+  libX11,
+  libXext,
+  fontconfig,
+  gtk3,
+  dpkg
+}:
 
 stdenv.mkDerivation rec {
   owner = "amir1376";
@@ -13,6 +32,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ dpkg autoPatchelfHook makeWrapper ];
 
   buildInputs = [
+    gtk3
     openjdk
     zlib
     alsa-lib
@@ -53,7 +73,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "A Download Manager that speeds up your downloads";
-    # license = licenses.apache20;
+    license = licenses.gpl3;
     platforms = platforms.linux;
     maintainers = with maintainers; [ ];
     homepage = "https://abdownloadmanager.com/";
