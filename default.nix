@@ -6,7 +6,10 @@
 # commands such as:
 #     nix-build -A mypackage
 
-{ pkgs ? import <nixpkgs> { } }:
+{
+  pkgs ? import <nixpkgs> { },
+  ...
+}:
 
 {
   # The `lib`, `modules`, and `overlays` names are special
@@ -18,5 +21,4 @@
   xdman8 = pkgs.callPackage ./pkgs/xdman8 { };
   abdm = pkgs.callPackage ./pkgs/abdm { };
   mpv-handler = pkgs.callPackage ./pkgs/mpv-handler{ };
-
 }

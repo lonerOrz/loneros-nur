@@ -5,7 +5,6 @@
   makeWrapper,
   mpv,
   yt-dlp,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "mpv-handler";
@@ -15,15 +14,13 @@ rustPlatform.buildRustPackage rec {
     owner = "akiirui";
     repo = "mpv-handler";
     rev = "v${version}";
-    sha256 = "sha256-RpfHUVZmhtneeu8PIfxinYG3/groJPA9QveDSvzU6Zo=";
+    hash = "sha256-RpfHUVZmhtneeu8PIfxinYG3/groJPA9QveDSvzU6Zo=";
   };
 
-  cargoHash = "sha256-FrE1PSRc7GTNUum05jNgKnzpDUc3FiS5CEM18It0lYY=";
+  cargoHash = "sha256-oCbJB6qIUlZ9b81lk5k12+pH6IEn4mJVtUtatC1x9x0=";
   useFetchCargoVendor = true;
 
-  passthru.updateScript = nix-update-script {};
-
-  nativeBuildInputs = [makeWrapper];
+  nativeBuildInputs = [ makeWrapper ];
 
   postInstall = ''
     mkdir -p $out/share/applications
@@ -39,7 +36,8 @@ rustPlatform.buildRustPackage rec {
     description = "Play website videos and songs with mpv & yt-dlp.";
     homepage = "https://github.com/akiirui/mpv-handler";
     license = licenses.mit;
-    maintainers = with maintainers; []; # 添加你的 GitHub 用户名，如果打算提交
+    maintainers = with maintainers; [ lonerOrz ];
     platforms = platforms.linux;
+    broken = true;
   };
 }
