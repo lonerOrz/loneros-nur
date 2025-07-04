@@ -15,7 +15,7 @@
   overlays = import ./overlays; # nixpkgs overlays
 
   # example-package = pkgs.callPackage ./pkgs/example-package { };
-  xdman8 = pkgs.libsForQt5.callPackage ./pkgs/xdman8 { };
+  xdman8 = pkgs.callPackage ./pkgs/xdman8 { };
   abdm = pkgs.callPackage ./pkgs/abdm { };
   mpv-handler = pkgs.callPackage ./pkgs/mpv-handler{ };
 
