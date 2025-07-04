@@ -32,12 +32,11 @@ rustPlatform.buildRustPackage rec {
       --prefix PATH : ${lib.makeBinPath [mpv yt-dlp]}
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Play website videos and songs with mpv & yt-dlp.";
     homepage = "https://github.com/akiirui/mpv-handler";
-    license = licenses.mit;
-    maintainers = with maintainers; [ lonerOrz ];
-    platforms = platforms.linux;
+    license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
     broken = true;
   };
 }

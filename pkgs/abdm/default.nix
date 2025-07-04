@@ -123,6 +123,5 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/amir1376/ab-download-manager";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ lonerOrz ];
   };
 }
