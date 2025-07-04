@@ -1,10 +1,10 @@
-{ 
-  autoPatchelfHook,
-  makeWrapper,
+{
   lib,
   stdenv,
   fetchurl,
-  openjdk,
+  glibc,
+  jdk,
+  glib,
   zlib,
   alsa-lib,
   libglvnd,
@@ -12,28 +12,31 @@
   freetype,
   libXtst,
   libXrender,
+  fontconfig,
   libX11,
   libXext,
-  fontconfig,
+  makeWrapper,
   gtk3,
-  dpkg
+  libxkbcommon,
+  libXrandr,
+  cairo,
+  pango,
 }:
-
 stdenv.mkDerivation rec {
-  owner = "amir1376";
-  pname = "ab-download-manager";
-  version = "1.5.2";
+  pname = "abdownloadmanager-bin";
+  version = "1.6.4";
 
   src = fetchurl {
-    url = "https://github.com/${owner}/${pname}/releases/download/v${version}/ABDownloadManager_${version}_linux_x64.deb";
-    sha256 = "592cdd94b27899208eaa06e6162dc2c2a6453d6112feb76af651c2a4a351d8eb";
+    url = "https://github.com/amir1376/ab-download-manager/releases/download/v${version}/ABDownloadManager_${version}_linux_x64.tar.gz";
+    sha256 = "sha256-nyYs70Y+uorjpmK20pxIvMj9iTDHItbHN2F/tIEd4os=";
   };
 
-  nativeBuildInputs = [ dpkg autoPatchelfHook makeWrapper ];
+  nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
-    gtk3
-    openjdk
+    glibc
+    jdk
+    glib
     zlib
     alsa-lib
     libglvnd
@@ -41,42 +44,85 @@ stdenv.mkDerivation rec {
     freetype
     libXtst
     libXrender
+    fontconfig
     libX11
     libXext
-    fontconfig
+
+    # GTK 相关依赖
+    gtk3
+    libxkbcommon
+    libXrandr
+    cairo
+    pango
   ];
 
-  propagatedBuildInputs = [ libXext ];
-
   unpackPhase = ''
-    # tar -xvzf $src -C $out
-    dpkg -x $src $out  # 使用 dpkg 解压 .deb 文件
-  '';
-
-  patchPhase = ''
-    sed -i 's|AB Download Manager|Network;|' $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
-    sed -i 's|Icon=\/opt\/abdownloadmanager\/lib\/ABDownloadManager.png|Icon=abdownloadmanager|' $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
-    sed -i 's|Comment=ABDownloadManager|Comment=Download Manager that speeds up your downloads|' $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
-    sed -i 's|MimeType=|StartupNotify=false|' $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
-    echo 'StartupWMClass=com.abdownloadmanager.ABDownloadManager' >> $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
-    echo 'GenericName=Download Manager' >> $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop
+    tar -xzf $src
   '';
 
   installPhase = ''
-    rm -rf $out/opt/abdownloadmanager/share
-    cp -r $out/opt/abdownloadmanager $out/
-    mkdir -p $out/usr/share/applications
-    cp $out/opt/abdownloadmanager/lib/abdownloadmanager-ABDownloadManager.desktop $out/usr/share/applications/
-    mkdir -p $out/usr/share/icons/hicolor/512x512/apps
-    cp $out/opt/abdownloadmanager/lib/ABDownloadManager.png $out/usr/share/icons/hicolor/512x512/apps/abdownloadmanager.png
+        runHook preInstall
+
+        mkdir -p $out/opt/ABDownloadManager
+        cp -r ABDownloadManager/* $out/opt/ABDownloadManager/
+
+        mkdir -p $out/bin
+
+        cat > $out/bin/abdm << EOF
+    #!/bin/sh
+    export GDK_BACKEND=x11
+    export JAVA_HOME=${jdk}
+    export PATH=\$JAVA_HOME/bin:\$PATH
+    export LD_LIBRARY_PATH=${
+      lib.makeLibraryPath [
+        glib
+        libXext
+        libX11
+        libXtst
+        libXrender
+        fontconfig
+        freetype
+        libXi
+        zlib
+        alsa-lib
+        libglvnd
+        gtk3
+        libxkbcommon
+        libXrandr
+        cairo
+        pango
+      ]
+    }:\$LD_LIBRARY_PATH
+    export JAVA_LIBRARY_PATH=\$JAVA_HOME/lib/server
+
+    cd "$out/opt/ABDownloadManager"
+    exec ./bin/ABDownloadManager "\$@"
+    EOF
+
+        chmod +x $out/bin/abdm
+
+        install -Dm644 $out/opt/ABDownloadManager/lib/ABDownloadManager.png \
+          $out/share/pixmaps/ABDownloadManager.png
+
+        mkdir -p $out/share/applications
+        cat > $out/share/applications/ABDownloadManager.desktop << EOF
+    [Desktop Entry]
+    Name=ABDownloadManager
+    Exec=abdm
+    Type=Application
+    Icon=ABDownloadManager
+    Comment=A Kotlin based download manager
+    Categories=Network;FileTransfer;
+    EOF
+
+        runHook postInstall
   '';
 
-  meta = with lib; {
-    description = "A Download Manager that speeds up your downloads";
-    license = licenses.gpl3;
-    platforms = platforms.linux;
-    maintainers = with maintainers; [ ];
-    homepage = "https://abdownloadmanager.com/";
+  meta = {
+    description = "A Kotlin based download manager";
+    homepage = "https://github.com/amir1376/ab-download-manager";
+    license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ lonerOrz ];
   };
 }
-
