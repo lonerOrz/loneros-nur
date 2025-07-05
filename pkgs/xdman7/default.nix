@@ -55,5 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://xtremedownloadmanager.com/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    binaryNativeCode = true;
   };
 })

@@ -37,5 +37,6 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/akiirui/mpv-handler";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    binaryNativeCode = true;
   };
 }

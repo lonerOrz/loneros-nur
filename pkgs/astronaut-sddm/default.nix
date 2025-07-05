@@ -55,5 +55,6 @@ in
       homepage = "https://github.com/Keyitdev/sddm-astronaut-theme";
       license = lib.licenses.gpl3;
       platforms = lib.platforms.linux;
+      binaryNativeCode = false;
     };
   }
