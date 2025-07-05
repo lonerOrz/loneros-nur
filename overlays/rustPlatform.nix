@@ -1,12 +1,16 @@
 self: super: let
-  rustBin = self.rust-bin.beta.latest.default;
+  rustBin = self.rust-bin.selectLatestNightlyWith (toolchain:
+    toolchain.default.override {
+      extensions = ["rust-src"];
+      targets = ["arm-unknown-linux-gnueabihf"];
+    });
 
   rustPlatform = super.makeRustPlatform {
     cargo = rustBin;
     rustc = rustBin;
   };
 
-  cargoAuditable = rustPlatform.buildRustPackage( final:{
+  cargoAuditable = rustPlatform.buildRustPackage (final: {
     pname = "cargo-auditable";
     version = "0.6.6";
 
@@ -26,12 +30,13 @@ self: super: let
       license = licenses.mit;
     };
   });
-
 in {
-  rustPlatform = super.makeRustPlatform {
-    cargo = rustBin;
-    rustc = rustBin;
-  } // {
-    cargo-auditable = cargoAuditable;
-  };
+  rustPlatform =
+    super.makeRustPlatform {
+      cargo = rustBin;
+      rustc = rustBin;
+    }
+    // {
+      cargo-auditable = cargoAuditable;
+    };
 }

@@ -1,3 +1,1 @@
-{
-  rustPlatform = import ./rustPlatform.nix;
-}
+{ }
