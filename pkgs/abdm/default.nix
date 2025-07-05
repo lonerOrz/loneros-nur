@@ -22,21 +22,20 @@
   cairo,
   pango,
 }:
-stdenv.mkDerivation rec {
+stdenv.mkDerivation ( finalAttrs: {
   pname = "abdownloadmanager-bin";
   version = "1.6.4";
 
   src = fetchurl {
-    url = "https://github.com/amir1376/ab-download-manager/releases/download/v${version}/ABDownloadManager_${version}_linux_x64.tar.gz";
+    url = "https://github.com/amir1376/ab-download-manager/releases/download/v${finalAttrs.version}/ABDownloadManager_${finalAttrs.version}_linux_x64.tar.gz";
     sha256 = "sha256-nyYs70Y+uorjpmK20pxIvMj9iTDHItbHN2F/tIEd4os=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper jdk ];
 
   buildInputs = [
     glibc
-    jdk
-    glib
+    # glib
     zlib
     alsa-lib
     libglvnd
@@ -61,51 +60,42 @@ stdenv.mkDerivation rec {
   '';
 
   installPhase = ''
-        runHook preInstall
+    runHook preInstall
 
-        mkdir -p $out/opt/ABDownloadManager
-        cp -r ABDownloadManager/* $out/opt/ABDownloadManager/
+    mkdir -p $out/opt/ABDownloadManager
+    cp -r ABDownloadManager/* $out/opt/ABDownloadManager/
 
-        mkdir -p $out/bin
+    makeWrapper $out/opt/ABDownloadManager/bin/ABDownloadManager $out/bin/abdm \
+      --set GDK_BACKEND x11 \
+      --set JAVA_HOME ${jdk} \
+      --set JAVA_LIBRARY_PATH \$JAVA_HOME/lib/server \
+      --prefix PATH : \$JAVA_HOME/bin \
+      --prefix LD_LIBRARY_PATH : ${
+        lib.makeLibraryPath [
+          glib
+          libXext
+          libX11
+          libXtst
+          libXrender
+          fontconfig
+          freetype
+          libXi
+          zlib
+          alsa-lib
+          libglvnd
+          gtk3
+          libxkbcommon
+          libXrandr
+          cairo
+          pango
+        ]
+      }
 
-        cat > $out/bin/abdm << EOF
-    #!/bin/sh
-    export GDK_BACKEND=x11
-    export JAVA_HOME=${jdk}
-    export PATH=\$JAVA_HOME/bin:\$PATH
-    export LD_LIBRARY_PATH=${
-      lib.makeLibraryPath [
-        glib
-        libXext
-        libX11
-        libXtst
-        libXrender
-        fontconfig
-        freetype
-        libXi
-        zlib
-        alsa-lib
-        libglvnd
-        gtk3
-        libxkbcommon
-        libXrandr
-        cairo
-        pango
-      ]
-    }:\$LD_LIBRARY_PATH
-    export JAVA_LIBRARY_PATH=\$JAVA_HOME/lib/server
+    install -Dm644 $out/opt/ABDownloadManager/lib/ABDownloadManager.png \
+      $out/share/pixmaps/ABDownloadManager.png
 
-    cd "$out/opt/ABDownloadManager"
-    exec ./bin/ABDownloadManager "\$@"
-    EOF
-
-        chmod +x $out/bin/abdm
-
-        install -Dm644 $out/opt/ABDownloadManager/lib/ABDownloadManager.png \
-          $out/share/pixmaps/ABDownloadManager.png
-
-        mkdir -p $out/share/applications
-        cat > $out/share/applications/ABDownloadManager.desktop << EOF
+    mkdir -p $out/share/applications
+    cat > $out/share/applications/ABDownloadManager.desktop << EOF
     [Desktop Entry]
     Name=ABDownloadManager
     Exec=abdm
@@ -115,13 +105,13 @@ stdenv.mkDerivation rec {
     Categories=Network;FileTransfer;
     EOF
 
-        runHook postInstall
+    runHook postInstall
   '';
 
   meta = {
     description = "A Kotlin based download manager";
     homepage = "https://github.com/amir1376/ab-download-manager";
-    license = lib.licenses.mit;
+    license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
   };
-}
+})
