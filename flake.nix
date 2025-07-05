@@ -32,6 +32,7 @@
           inherit system;
           overlays = [
             rust-overlay.overlays.default
+            (import ./overlays/rustPlatform.nix)
           ];
         };
 

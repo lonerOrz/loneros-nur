@@ -31,12 +31,11 @@ self: super: let
     };
   });
 in {
-  rustPlatform =
-    super.makeRustPlatform {
-      cargo = rustBin;
-      rustc = rustBin;
-    }
-    // {
-      cargo-auditable = cargoAuditable;
-    };
+  rustPlatform = super.makeRustPlatform {
+    cargo = rustBin;
+    rustc = rustBin;
+  };
+  # // {
+  #   cargo-auditable = cargoAuditable;
+  # };
 }
