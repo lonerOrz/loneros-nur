@@ -1,24 +1,15 @@
-# This file describes your repository contents.
-# It should return a set of nix derivations
-# and optionally the special attributes `lib`, `modules` and `overlays`.
-# It should NOT import <nixpkgs>. Instead, you should take pkgs as an argument.
-# Having pkgs default to <nixpkgs> is fine though, and it lets you use short
-# commands such as:
-#     nix-build -A mypackage
-
 {
-  pkgs ? import <nixpkgs> { },
-  ...
-}:
-
-{
+  system ? builtins.currentSystem,
+  pkgs ? import <nixpkgs> {inherit system;},
+}: {
   # The `lib`, `modules`, and `overlays` names are special
-  lib = import ./lib { inherit pkgs; }; # functions
+  lib = import ./lib {inherit pkgs;}; # functions
   modules = import ./modules; # NixOS modules
   overlays = import ./overlays; # nixpkgs overlays
 
   # example-package = pkgs.callPackage ./pkgs/example-package { };
-  xdman8 = pkgs.callPackage ./pkgs/xdman8 { };
-  abdm = pkgs.callPackage ./pkgs/abdm { };
-  mpv-handler = pkgs.callPackage ./pkgs/mpv-handler{ };
+  xdman7 = pkgs.callPackage ./pkgs/xdman7 {};
+  abdm = pkgs.callPackage ./pkgs/abdm {};
+  mpv-handler = pkgs.callPackage ./pkgs/mpv-handler {};
+  astronaut-sddm = pkgs.callPackage ./pkgs/astronaut-sddm {};
 }
