@@ -77,9 +77,11 @@ jobs:
           gh pr edit auto/update-custom-packages-${{ github.run_id }} \
             --add-label auto_update_custom_package \
             --add-label github_actions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: empy commit
         run: |
-          git commit --allow-empty && git push
+          git commit --allow-empty -m "chore: trigger workflow" && git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
