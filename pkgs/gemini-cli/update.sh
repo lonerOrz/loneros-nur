@@ -81,7 +81,7 @@ cat $PKG_FILE
 NIX_BUILD_LOG=$(mktemp)
 
 set +o pipefail  # 临时关闭 pipefail
-nix build .#gemini-cli --print-build-logs 2>&1 | tee "$NIX_BUILD_LOG"
+(nix build .#gemini-cli --print-build-logs 2>&1 | tee "$NIX_BUILD_LOG") || true
 set -o pipefail
 
 # 提取 npmDepsHash
