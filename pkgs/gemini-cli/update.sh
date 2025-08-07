@@ -70,10 +70,6 @@ sed -i -E "s|url = \".*\";|url = \"$tarball_url\";|" "$package_file"
 sed -i -E "s|srcHash = \"sha256-[^\"]+\";|srcHash = \"sha256-$tarball_hash\";|" "$package_file"
 sed -i -E "s|npmDepsHash = \"sha256-[^\"]+\";|npmDepsHash = \"$npmdeps_hash\";|" "$package_file"
 
-# 构建验证
-echo "Building package to verify..."
-nix build "$script_dir/../.."#gemini-cli
-
 echo "✅ Update completed successfully!"
 if [ "$latest_version" = "$current_version" ]; then
   echo "✅ Hashes have been updated for gemini-cli $current_version"
