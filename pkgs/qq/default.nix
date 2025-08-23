@@ -141,7 +141,6 @@ else
             libuuid
           ]
         }" \
-        --add-flags "--wayland-text-input-version=3 --disable-gpu" \
         --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}" \
         --add-flags ${lib.escapeShellArg commandLineArgs} \
         "''${gappsWrapperArgs[@]}"
