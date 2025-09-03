@@ -8,22 +8,16 @@ This is my personal [NUR (Nix User Repository)](https://github.com/nix-community
 
 ---
 
-## 📦 Key Packages
+## 📦 Packages
 
-### QQ
-A messaging app widely used in China, packaged for Linux and macOS with automatic updates.
+This repository contains subjective package selections that I personally use. These include:
 
-### WeChat
-Popular messaging app for Linux with proper sandboxing and automatic updates.
+- Communication software (QQ, WeChat, etc.)
+- Development tools (Qwen-code, etc.)
+- Multimedia applications (MPV Handler, Linux Wallpaper Engine, etc.)
+- Various utilities and other applications
 
-### MPV Handler
-Handler for mpv:// protocol that allows you to play videos with mpv from the web.
-
-### Qwen-code
-Qwen coding agent - a coding assistant that lives in the digital world.
-
-### Linux Wallpaper Engine
-Wallpaper engine for Linux that supports animated wallpapers.
+For a complete list of available packages, please browse the [pkgs/](./pkgs) directory.
 
 ---
 
@@ -49,10 +43,10 @@ If you have enabled the [official NUR repository](https://github.com/nix-communi
     nixosConfigurations.myConfig = nixpkgs.lib.nixosSystem {
       modules = [
         ({ pkgs, ... }: {
-          environment.systemPackages = [ 
-            nur.repos.lonerOrz.qq
-            nur.repos.lonerOrz.wechat
-            nur.repos.lonerOrz.mpv-handler
+          environment.systemPackages = with nur.repos.lonerOrz; [ 
+            qq
+            wechat
+            mpv-handler
           ];
         })
       ];
