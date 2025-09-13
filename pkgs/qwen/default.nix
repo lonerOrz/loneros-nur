@@ -1,6 +1,6 @@
 {
   lib,
-  nodejs_20,
+  nodejs_18,
   buildNpmPackage,
   fetchFromGitHub,
   nix-update-script,
@@ -26,7 +26,7 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-tI8s3e3UXE+wV81ctuRsJb3ewL67+a+d9R5TnV99wz4=";
 
-  nodejs = nodejs_20;
+  nodejs = nodejs_18;
 
   nativeBuildInputs = [
     jq
