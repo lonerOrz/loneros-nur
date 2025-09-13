@@ -11,24 +11,24 @@ let
   pname = "qwen-code";
   version = "0.0.11";
 
-  # 生成 patched src
-  srcFixed = stdenv.mkDerivation rec {
-    name = "src-fixed";
-    version = "${version}";
+  # 原始源码
+  srcOrig = fetchFromGitHub {
+    owner = "QwenLM";
+    repo = "qwen-code";
+    tag = "v${version}";
+    hash = "sha256-5qKSWbc0NPpgvt36T/gRSgm1+o2Pbdw3tgfcGba6YSs=";
+  };
 
-    src = fetchFromGitHub {
-      owner = "QwenLM";
-      repo = "qwen-code";
-      tag = "v${version}";
-      hash = "sha256-5qKSWbc0NPpgvt36T/gRSgm1+o2Pbdw3tgfcGba6YSs=";
-    };
+  src = stdenv.mkDerivation {
+    name = "src-fixed";
+    version = "v0.0.11-fixed";
+
+    src = srcOrig;
 
     nativeBuildInputs = [ jq ];
 
-    # 禁止构建
     dontBuild = true;
 
-    # 把 package-lock.json patch 后直接拷贝输出
     installPhase = ''
       mkdir -p $out
       cp -r $src/* $out/
@@ -45,8 +45,7 @@ let
   };
 in
 buildNpmPackage (finalAttrs: {
-  inherit pname version;
-  src = srcFixed.out;
+  inherit pname version src;
 
   npmDepsHash = "sha256-tI8s3e3UXE+wV81ctuRsJb3ewL67+a+d9R5TnV99wz4=";
 
