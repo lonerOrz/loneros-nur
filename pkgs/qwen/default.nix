@@ -1,6 +1,5 @@
 {
   lib,
-  nodejs_18,
   buildNpmPackage,
   fetchFromGitHub,
   nix-update-script,
@@ -26,31 +25,29 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-tI8s3e3UXE+wV81ctuRsJb3ewL67+a+d9R5TnV99wz4=";
 
-  nodejs = nodejs_18;
-
   nativeBuildInputs = [
     jq
   ];
 
-  # postPatch = ''
-  #   # Remove node-pty dependencies from package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."node-pty")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty-darwin-arm64")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty-darwin-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty-linux-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty-win32-arm64")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #   jq 'del(.optionalDependencies."@lydell/node-pty-win32-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
-  #
-  #   # Remove node-pty dependencies from packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."node-pty")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty-linux-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  #   jq 'del(.dependencies."@lydell/node-pty-win32-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
-  # '';
+  postPatch = ''
+    # Remove node-pty dependencies from package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."node-pty")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty-darwin-arm64")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty-darwin-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty-linux-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty-win32-arm64")' package.json > package.json.tmp && mv package.json.tmp package.json
+    jq 'del(.optionalDependencies."@lydell/node-pty-win32-x64")' package.json > package.json.tmp && mv package.json.tmp package.json
+
+    # Remove node-pty dependencies from packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."node-pty")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty-linux-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+    jq 'del(.dependencies."@lydell/node-pty-win32-x64")' packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+  '';
 
   buildPhase = ''
     runHook preBuild
