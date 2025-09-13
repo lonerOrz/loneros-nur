@@ -55,7 +55,7 @@ buildNpmPackage (finalAttrs: {
     ./add-missing-resolved-integrity-fields.patch
   ];
 
-  # npmBuildFlags = "--ignore-scripts";
+  npmBuildFlags = "--ignore-scripts";
 
   buildPhase = ''
     runHook preBuild
