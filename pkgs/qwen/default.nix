@@ -34,8 +34,18 @@ let
       cp -r $src/* $out/
       chmod -R u+w $out
 
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
+      # 先 patch package.json
+      ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
+
+      # 再 patch package-lock.json
       ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
