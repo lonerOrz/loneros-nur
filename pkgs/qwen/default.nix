@@ -14,7 +14,7 @@ let
   # 生成 patched src
   srcFixed = stdenv.mkDerivation rec {
     name = "src-fixed";
-    version = "fixed";
+    version = "${version}";
 
     src = fetchFromGitHub {
       owner = "QwenLM";
