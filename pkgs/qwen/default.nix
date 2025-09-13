@@ -4,8 +4,8 @@
   buildNpmPackage,
   fetchFromGitHub,
   nix-update-script,
-  fetchNpmDeps,
   jq,
+  git,
 }:
 let
   pname = "qwen-code";
@@ -77,6 +77,8 @@ buildNpmPackage (finalAttrs: {
     "--no-optional"
     "--ignore-scripts"
   ];
+
+  nativeBuildInputs = [ git ];
 
   buildPhase = ''
     runHook preBuild
