@@ -51,6 +51,14 @@ let
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
+
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
+      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
     '';
   };
 in
