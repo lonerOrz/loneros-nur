@@ -16,7 +16,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://github.com/${owner}/${repo}/releases/download/v${version}/${asset}";
-    hash = "sha256-03lh6mfs1jrlh8ghcj5p11sdcqnmb4nmgyirq04nqrg58lrfr6rg";
+    hash = "sha256-L5vsMkXlZWwJwDn6Vy1Z1WLWdAi3SAYfgjTLoF01kA4=";
   };
 
   phases = [

@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p gnugrep curl jq gnused nix
+#!nix-shell -i bash -p curl jq nix-prefetch-url
 
 set -euo pipefail
 
@@ -22,7 +22,9 @@ LATEST_VER="${LATEST_VER#"${REV_PREFIX}"}"
 ASSET_URL=$(echo "${RELEASE_JSON}" | jq -r ".assets[] | select(.name == \"${ASSET_NAME}\") | .browser_download_url")
 [[ -z "${ASSET_URL}" ]] && { echo "错误：未找到资产 ${ASSET_NAME}" >&2; exit 1; }
 
-LATEST_HASH=$(nix-prefetch-url "${ASSET_URL}" || { echo "错误：无法计算哈希值" >&2; exit 1; })
+# LATEST_HASH=$(nix-prefetch-url "${ASSET_URL}" || { echo "错误：无法计算哈希值" >&2; exit 1; })
+raw_hash=$(nix-prefetch-url "${ASSET_URL}")
+LATEST_HASH=$(nix hash to-base64 "sha256:$raw_hash")
 
 sed -i "s|hash = \"[^\"]*\"|hash = \"sha256-${LATEST_HASH}\"|g" "${NIX_FILE}"
 sed -i "s|version = \"${CURRENT_VER}\"|version = \"${LATEST_VER}\"|g" "${NIX_FILE}"
