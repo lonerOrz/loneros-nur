@@ -11,7 +11,6 @@ let
   pname = "qwen-code";
   version = "0.0.11";
 
-  # 原始源码
   srcOrig = fetchFromGitHub {
     owner = "QwenLM";
     repo = "qwen-code";
@@ -34,7 +33,6 @@ let
       cp -r $src/* $out/
       chmod -R u+w $out
 
-      # 先 patch package.json
       ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
@@ -43,7 +41,6 @@ let
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
 
-      # 再 patch package-lock.json
       ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
       ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
@@ -71,11 +68,6 @@ buildNpmPackage (finalAttrs: {
     # similar to upstream gemini-cli some node deps are missing resolved and integrity fields
     # upstream the problem is solved in master and in v0.4+, eventually the fix should arrive to qwen
     ./add-missing-resolved-integrity-fields.patch
-  ];
-
-  npmFlags = [
-    "--no-optional"
-    "--ignore-scripts"
   ];
 
   nativeBuildInputs = [ git ];
