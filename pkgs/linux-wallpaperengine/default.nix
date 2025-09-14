@@ -56,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "Almamu";
     repo = "linux-wallpaperengine";
-    rev = "be0fc25e72203310f268221a132c5d765874b02c";
-    hash = "sha256-Wkxt6c5aSMJnQPx/n8MeNKLQ8YmdFilzhJ1wQooKprI=";
+    rev = "d55e58c151e270391e71d7dfb6cc61940c3375e6";
+    hash = "sha256-kGxo8KWap9L322HOB4cCEQ38GehSBiIhU/GXN0grjSg=";
     fetchSubmodules = true;
   };
 
