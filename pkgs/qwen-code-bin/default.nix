@@ -15,8 +15,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   inherit version;
 
   src = fetchurl {
+    # https://github.com/QwenLM/qwen-code/releases/download/v0.0.11-nightly.8/gemini.js
     url = "https://github.com/${owner}/${repo}/releases/download/v${version}/${asset}";
-    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    hash = "";
   };
 
   phases = [
@@ -36,11 +37,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = [
-    ./update-asset.sh
-    "${owner}/${repo}"
-    "${asset}"
-  ];
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Coding agent that lives in the digital world";
@@ -49,5 +46,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [ lonerOrz ];
     mainProgram = "qwen";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
   };
 })
