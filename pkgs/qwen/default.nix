@@ -7,6 +7,7 @@
   jq,
   git,
 }:
+
 let
   pname = "qwen-code";
   version = "0.0.11";
@@ -23,9 +24,7 @@ let
     version = "v0.0.11-fixed";
 
     src = srcOrig;
-
     nativeBuildInputs = [ jq ];
-
     dontBuild = true;
 
     postPatch = ''
@@ -35,16 +34,19 @@ let
         echo "Detected Darwin: removing node-pty to avoid build failure"
 
         # 根 package.json
-        ${jq}/bin/jq 'del(.dependencies."node-pty", .dependencies."@lydell/node-pty")' package.json > package.json.tmp
+        ${jq}/bin/jq 'del(.dependencies."node-pty", .dependencies."@lydell/node-pty")
+                      | .optionalDependencies?"node-pty" //= "optional"' package.json > package.json.tmp
         mv package.json.tmp package.json
 
         # core 包 package.json
-        ${jq}/bin/jq 'del(.dependencies."node-pty", .dependencies."@lydell/node-pty")' packages/core/package.json > core.tmp
+        ${jq}/bin/jq 'del(.dependencies."node-pty", .dependencies."@lydell/node-pty")
+                      | .optionalDependencies?"node-pty" //= "optional"' packages/core/package.json > core.tmp
         mv core.tmp packages/core/package.json
 
         # package-lock.json
         ${jq}/bin/jq 'del(.dependencies."node-pty", .dependencies."@lydell/node-pty")' package-lock.json > lock.tmp
         mv lock.tmp package-lock.json
+
       else
         echo "Non-Darwin platform: pin node-pty to @lydell/node-pty@1.1.0"
 
@@ -62,7 +64,6 @@ let
         mv lock.tmp package-lock.json
       fi
 
-      # 打印 node-pty 是否还存在检查
       grep -R "node-pty" || echo "node-pty removed"
     '';
 
@@ -79,8 +80,6 @@ buildNpmPackage (finalAttrs: {
   npmDepsHash = "sha256-tI8s3e3UXE+wV81ctuRsJb3ewL67+a+d9R5TnV99wz4=";
 
   patches = [
-    # similar to upstream gemini-cli some node deps are missing resolved and integrity fields
-    # upstream the problem is solved in master and in v0.4+, eventually the fix should arrive to qwen
     ./add-missing-resolved-integrity-fields.patch
   ];
 
@@ -88,21 +87,18 @@ buildNpmPackage (finalAttrs: {
 
   buildPhase = ''
     runHook preBuild
-
+    npm install --legacy-peer-deps
     npm run generate
     npm run bundle
-
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
-
     mkdir -p $out/bin $out/share/qwen-code
     cp -r bundle/* $out/share/qwen-code/
     patchShebangs $out/share/qwen-code
     ln -s $out/share/qwen-code/gemini.js $out/bin/qwen
-
     runHook postInstall
   '';
 
