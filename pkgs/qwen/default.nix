@@ -28,34 +28,27 @@ let
 
     dontBuild = true;
 
+    postPatch = ''
+      # 修改根 package.json
+      ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
+        package.json > package.json.tmp && mv package.json.tmp package.json
+
+      # 修改 core 包的 package.json
+      ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
+        packages/core/package.json > core.tmp && mv core.tmp packages/core/package.json
+
+      # 修改 lock 文件
+      ${jq}/bin/jq '(.dependencies."node-pty".version="1.1.0")
+                   | (.dependencies."node-pty".resolved="https://registry.npmjs.org/@lydell/node-pty/-/node-pty-1.1.0.tgz")' \
+        package-lock.json > lock.tmp && mv lock.tmp package-lock.json
+
+          grep -R "node-pty";
+    '';
+
     installPhase = ''
       mkdir -p $out
       cp -r $src/* $out/
       chmod -R u+w $out
-
-      ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/package.json > $out/package.json.tmp && mv $out/package.json.tmp $out/package.json
-
-      ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/package-lock.json > $out/package-lock.json.tmp && mv $out/package-lock.json.tmp $out/package-lock.json
-
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."node-pty")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-arm64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-darwin-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-linux-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-arm64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
-      ${jq}/bin/jq 'del(.dependencies."@lydell/node-pty-win32-x64")' $out/packages/core/package.json > $out/packages/core/package.json.tmp && mv $out/packages/core/package.json.tmp $out/packages/core/package.json
     '';
   };
 in
