@@ -15,9 +15,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   inherit version;
 
   src = fetchurl {
-    # https://github.com/QwenLM/qwen-code/releases/download/v0.0.11-nightly.8/gemini.js
     url = "https://github.com/${owner}/${repo}/releases/download/v${version}/${asset}";
-    hash = "";
+    hash = "sha256-03lh6mfs1jrlh8ghcj5p11sdcqnmb4nmgyirq04nqrg58lrfr6rg";
   };
 
   phases = [

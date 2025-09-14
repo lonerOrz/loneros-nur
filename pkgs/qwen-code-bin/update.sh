@@ -1,34 +1,30 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p gnugrep curl jq gnused
+#!nix-shell -i bash -p gnugrep curl jq gnused nix
 
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 NIX_FILE="default.nix"
-RELEASE_ID="latest"
-
 GITHUB_REPO="QwenLM/qwen-code"
 ASSET_NAME="gemini.js"
-REV_PREFIX="${3:-v}"
+REV_PREFIX="v"
 
-CURRENT_VER="$(grep -oP 'version = "\K[^"]+' "${NIX_FILE}")"
-CURRENT_HASH="$(grep -oP 'hash = "\K[^"]+' "${NIX_FILE}")"
-{
-    read -r LATEST_VER
-    read -r ASSET_DIGEST
-} < <(curl --fail -s ${GITHUB_TOKEN:+-u ":${GITHUB_TOKEN}"} "https://api.github.com/repos/${GITHUB_REPO}/releases/${RELEASE_ID}" | jq -r ".tag_name, (.assets[] | select(.name == \"${ASSET_NAME}\") | .digest)")
+CURRENT_VER=$(grep -oP 'version = "\K[^"]+' "${NIX_FILE}" || { echo "错误：无法提取版本号" >&2; exit 1; })
 
+API_URL="https://api.github.com/repos/${GITHUB_REPO}/releases/latest"
+RELEASE_JSON=$(curl --fail -s "${API_URL}" || { echo "错误：无法获取 GitHub 发布信息" >&2; exit 1; })
+LATEST_VER=$(echo "${RELEASE_JSON}" | jq -r '.tag_name // empty' || { echo "错误：无法获取最新版本" >&2; exit 1; })
 LATEST_VER="${LATEST_VER#"${REV_PREFIX}"}"
 
-if [[ "${LATEST_VER}" == "${CURRENT_VER}" ]]; then
-    echo "Up to date."
-    exit 0
-fi
+[[ "${LATEST_VER}" == "${CURRENT_VER}" ]] && { echo "已是最新版本：${CURRENT_VER}"; exit 0; }
 
-LATEST_HASH="$(nix-hash --to-sri "${ASSET_DIGEST}")"
+ASSET_URL=$(echo "${RELEASE_JSON}" | jq -r ".assets[] | select(.name == \"${ASSET_NAME}\") | .browser_download_url")
+[[ -z "${ASSET_URL}" ]] && { echo "错误：未找到资产 ${ASSET_NAME}" >&2; exit 1; }
 
-sed -i "s#hash = \"${CURRENT_HASH}\";#hash = \"${LATEST_HASH}\";#g" "${NIX_FILE}"
-sed -i "s#version = \"${CURRENT_VER}\";#version = \"${LATEST_VER}\";#g" "${NIX_FILE}"
+LATEST_HASH=$(nix-prefetch-url "${ASSET_URL}" || { echo "错误：无法计算哈希值" >&2; exit 1; })
 
-echo "Successfully updated from ${CURRENT_VER} to version ${LATEST_VER}."
+sed -i "s|hash = \"[^\"]*\"|hash = \"sha256-${LATEST_HASH}\"|g" "${NIX_FILE}"
+sed -i "s|version = \"${CURRENT_VER}\"|version = \"${LATEST_VER}\"|g" "${NIX_FILE}"
+
+echo "成功更新到版本 ${LATEST_VER}"
