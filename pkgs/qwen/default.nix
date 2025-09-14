@@ -28,27 +28,30 @@ let
 
     dontBuild = true;
 
-    postPatch = ''
-      # 修改根 package.json
-      ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
-        package.json > package.json.tmp && mv package.json.tmp package.json
-
-      # 修改 core 包的 package.json
-      ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
-        packages/core/package.json > core.tmp && mv core.tmp packages/core/package.json
-
-      # 修改 lock 文件
-      ${jq}/bin/jq '(.dependencies."node-pty".version="1.1.0")
-                   | (.dependencies."node-pty".resolved="https://registry.npmjs.org/@lydell/node-pty/-/node-pty-1.1.0.tgz")' \
-        package-lock.json > lock.tmp && mv lock.tmp package-lock.json
-
-          grep -R "node-pty";
-    '';
+    # postPatch = ''
+    #   # 修改根 package.json
+    #   ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
+    #     package.json > package.json.tmp && mv package.json.tmp package.json
+    #
+    #   # 修改 core 包的 package.json
+    #   ${jq}/bin/jq '.dependencies."node-pty"="@lydell/node-pty@1.1.0"' \
+    #     packages/core/package.json > core.tmp && mv core.tmp packages/core/package.json
+    #
+    #   # 修改 lock 文件
+    #   ${jq}/bin/jq '(.dependencies."node-pty".version="1.1.0")
+    #                | (.dependencies."node-pty".resolved="https://registry.npmjs.org/@lydell/node-pty/-/node-pty-1.1.0.tgz")' \
+    #     package-lock.json > lock.tmp && mv lock.tmp package-lock.json
+    #
+    #       grep -R "node-pty";
+    # '';
 
     installPhase = ''
       mkdir -p $out
       cp -r $src/* $out/
       chmod -R u+w $out
+
+      echo "Patching getPty.ts in $out"
+      sed -i 's/\bnode-pty\b/@lydell\/node-pty/g' $out/packages/core/src/utils/getPty.ts
     '';
   };
 in
