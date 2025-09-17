@@ -4,6 +4,7 @@
   fetchFromGitHub,
   nix-update-script,
   jq,
+  git,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -26,6 +27,7 @@ buildNpmPackage (finalAttrs: {
   npmDepsHash = "sha256-XvJO3ylm/ER5neSubci2w9OCTmqobmmXLbKmdQAqArY=";
 
   nativeBuildInputs = [
+    git
     jq
   ];
 
