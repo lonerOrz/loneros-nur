@@ -47,7 +47,7 @@ def check_auto_update(pkg_name):
             check=True,
         )
         value = json.loads(result.stdout)
-        return value is not False
+        return value != False
     except subprocess.CalledProcessError:
         # 如果不存在 autoUpdate 字段，默认允许更新
         return True
@@ -79,44 +79,35 @@ def get_update_script(pkg_name):
 def run_update_script(script, pkg_dir: Path, pkg_name: str):
     """
     执行 updateScript。
-    兼容以下形式：
-      - 字符串：可以是命令（如 "nix-update"）或文件路径
-      - 列表：递归执行多个脚本
-      - 字典：未来扩展（command 字段）
+    如果是 nix-update 可执行文件，自动加上软件名作为参数
     """
     if isinstance(script, str):
-        # case 1: 如果 script 是一个可执行命令（例如 "nix-update"）
-        if shutil.which(script):
-            print(f"[RUN CMD] {script} {pkg_name}")
-            subprocess.run([script, pkg_name], check=True, cwd=pkg_dir)
+        # 如果是 nix-update 直接加上软件名
+        if "nix-update" in script:
+            cmd = [script, pkg_name]
+            print(f"[RUN CMD] {' '.join(cmd)}")
+            subprocess.run(cmd, check=True, cwd=pkg_dir)
             return
 
-        # case 2: 如果是相对或绝对路径脚本文件
+        # 其他脚本路径
         update_file = Path(script)
         if not update_file.is_absolute():
             update_file = pkg_dir / update_file
-
         if not update_file.exists():
             print(f"[ERROR] updateScript {update_file} not found, skipping")
             return
-
         print(f"[RUN UPDATE SCRIPT] {update_file}")
         subprocess.run([str(update_file)], check=True, cwd=pkg_dir)
 
     elif isinstance(script, list):
-        # 递归执行 list 中的每个元素
         for step in script:
             run_update_script(step, pkg_dir, pkg_name)
-
     elif isinstance(script, dict):
-        # 支持 { "command": ["nix-update", "pkg"] } 形式
         if "command" in script:
-            cmd = script["command"]
-            print(f"[RUN CMD] {' '.join(cmd)} (dict format)")
-            subprocess.run(cmd, check=True, cwd=pkg_dir)
+            print(f"[RUN CMD] {script['command']} (dictionary command format)")
+            subprocess.run(script["command"], check=True, cwd=pkg_dir)
         else:
             print(f"[SKIP] Unknown dictionary format in updateScript: {script}")
-
     else:
         print(f"[WARN] Unsupported updateScript format: {script}")
 
@@ -158,9 +149,13 @@ def update_package(pkg_name, extra_args=None):
 def main():
     parser = argparse.ArgumentParser(description="Update Nix packages")
     parser.add_argument("--package", help="Update a single package")
-    parser.add_argument("--commit", action="store_true", help="Pass --commit to nix-update")
+    parser.add_argument(
+        "--commit", action="store_true", help="Pass --commit to nix-update"
+    )
     parser.add_argument("--test", action="store_true", help="Pass --test to nix-update")
-    parser.add_argument("--build", action="store_true", help="Pass --build to nix-update")
+    parser.add_argument(
+        "--build", action="store_true", help="Pass --build to nix-update"
+    )
     parser.add_argument("extra_args", nargs="*", help="Additional nix-update args")
     args = parser.parse_args()
 
