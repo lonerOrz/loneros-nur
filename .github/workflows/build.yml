@@ -71,6 +71,9 @@ jobs:
           signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
+      - name: Install jq
+        run: nix-env -iA nixpkgs.jq
+
       - name: Check evaluation
         run: |
           nix-env -f . -qa \* --meta --xml \
@@ -81,8 +84,8 @@ jobs:
             -I nixpkgs=$(nix-instantiate --find-file nixpkgs) \
             -I $PWD
 
-      - name: Build nix packages
-        run: nix shell -f '<nixpkgs>' nix-build-uncached -c nix-build-uncached ci.nix -A cacheOutputs
+      - name: Build nix packages individually with garbage collection
+        run: ./build-individual-packages.sh
 
       - name: Trigger NUR update
         # Don't replace <YOUR_REPO_NAME> here!
