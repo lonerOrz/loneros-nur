@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+.container {
+  display: flex;
+  align-items: flex-end;
+  font-family: sans-serif;
+}
+.bar-column {
+  display: flex;
+  flex-direction: column-reverse; /* 最新在上 */
+  margin-right: ${BAR_MARGIN}px;
+}
+.bar-block {
+  width: ${BAR_WIDTH}px;
+  height: ${BLOCK_HEIGHT}px;
+  margin-bottom: 1px;
+}
+.synced { background-color: #4caf50; }
+.unsynced { background-color: #f44336; }
+.bar-label {
+  text-align: center;
+  font-size: 10px;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div style="margin-left:20px; font-size:12px;">Latest: null | Fork: null | Official: null | Status: null</div>
+</div></body></html>
