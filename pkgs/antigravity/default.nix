@@ -80,4 +80,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  meta = {
+    description = "Google Antigravity — an internal Chrome/Electron-based development and onboarding tool";
+    homepage = "https://research.google/";
+    mainProgram = "antigravity";
+    binaryNativeCode = true;
+    license = lib.licenses.unfree;
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [ lonerOrz ];
+  };
 })
