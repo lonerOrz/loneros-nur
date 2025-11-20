@@ -43,9 +43,8 @@ def filter_valid_history(history):
 
 
 def get_latest_entry(valid_history):
-    for entry in reversed(valid_history):
-        if entry["phase"] != "initial":
-            return entry
+    if valid_history:
+        return valid_history[-1]  # 直接返回最新的条目，不管 phase 是什么
     return None
 
 
