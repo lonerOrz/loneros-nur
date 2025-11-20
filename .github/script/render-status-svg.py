@@ -44,7 +44,7 @@ def filter_valid_history(history):
 
 def get_latest_entry(valid_history):
     if valid_history:
-        return valid_history[-1]  # 直接返回最新的条目，不管 phase 是什么
+        return valid_history[-1]  # 直接返回最新的条目
     return None
 
 
@@ -77,7 +77,6 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
     label_width = 100
     left_padding = 30
 
-    # SVG 尺寸计算
     max_commits = max((len(entries) for _, entries in last_days), default=1)
     grid_width = max_commits * (circle_radius * 2 + circle_margin)
     width = max(900, left_padding + label_width + grid_width + 80)
@@ -85,7 +84,6 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
 
     svg_content = [
         f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">',
-        # 定义渐变和阴影
         "<defs>",
         '<linearGradient id="syncedGrad" x1="0" y1="0" x2="0" y2="1">',
         '<stop offset="0%" stop-color="#2ecc71"/>',
@@ -99,9 +97,7 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
         '<feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#888"/>',
         "</filter>",
         "</defs>",
-        # 背景
         f'<rect width="100%" height="100%" fill="#f5f7fa"/>',
-        # 标题
         '<text x="30" y="35" font-size="24" font-weight="bold" fill="#2c3e50">NUR Sync Status</text>',
     ]
 
@@ -124,8 +120,11 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
         svg_content.append(
             f'<text x="30" y="90" font-size="14" fill="#7f8c8d">📅 {latest_entry["timestamp_str"]}</text>'
         )
+        # 防止 None 报错
+        fork_rev = (latest_entry.get("fork_rev") or "")[:10]
+        official_rev = (latest_entry.get("official_rev") or "")[:10]
         svg_content.append(
-            f'<text x="30" y="110" font-size="14" fill="#7f8c8d">🔄 Fork: {latest_entry["fork_rev"][:10]}... | 📦 Official: {latest_entry["official_rev"][:10]}...</text>'
+            f'<text x="30" y="110" font-size="14" fill="#7f8c8d">🔄 Fork: {fork_rev}... | 📦 Official: {official_rev}...</text>'
         )
 
     # 分割线
