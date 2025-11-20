@@ -31,7 +31,7 @@ jobs:
 
       - name: Render status SVG
         run: |
-          python3 ./.github/script/render-status-svg.py status.json status.svg 7 10
+          python3 ./.github/script/render-status-svg.py status.json status.svg 7
 
       - name: Commit status files
         run: |
