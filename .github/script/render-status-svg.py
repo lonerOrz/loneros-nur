@@ -1,202 +1,195 @@
 #!/usr/bin/env python3
 """
-NUR Sync Status SVG Renderer
-
-This script generates an SVG image showing the status of NUR (Nix User Repository) sync operations.
+NUR Sync Status SVG Renderer - 日期 + 横向圆圈展示每天变化
 """
 
 import json
 import sys
 from datetime import datetime, timedelta, timezone
-from collections import defaultdict
 
-
-def status_to_color(status):
-    """Convert status string to color"""
-    color_map = {
-        "synced": "#4CAF50",  # Green
-        "unsynced": "#F44336",  # Red
-        "initial": "#9E9E9E",  # Gray
-    }
-    return color_map.get(status, "#795548")  # Brown for unknown
+# -------------------------------
+# 数据处理函数
+# -------------------------------
 
 
 def parse_iso_datetime(dt_str):
-    """Parse ISO 8601 datetime string to datetime object"""
     try:
-        # Remove 'Z' and add '+00:00' for proper timezone parsing
         dt_str = dt_str.replace("Z", "+00:00")
         return datetime.fromisoformat(dt_str)
     except ValueError:
-        # If parsing fails, return None
         return None
 
 
 def filter_valid_history(history):
-    """Filter and parse history entries, returning only valid ones"""
     valid_history = []
     for entry in history:
-        timestamp_str = entry.get("timestamp")
-
-        # Check if timestamp is a string and can be parsed
-        if isinstance(timestamp_str, str):
-            timestamp_obj = parse_iso_datetime(timestamp_str)
-            if timestamp_obj is not None:
+        ts_str = entry.get("timestamp")
+        if isinstance(ts_str, str):
+            ts_obj = parse_iso_datetime(ts_str)
+            if ts_obj:
                 valid_history.append(
                     {
-                        "timestamp_str": timestamp_str,
-                        "timestamp_obj": timestamp_obj,
+                        "timestamp_str": ts_str,
+                        "timestamp_obj": ts_obj,
                         "fork_rev": entry.get("fork_rev"),
                         "official_rev": entry.get("official_rev"),
                         "status": entry.get("status"),
                         "phase": entry.get("phase"),
                     }
                 )
-    # Sort by timestamp to ensure order
     valid_history.sort(key=lambda x: x["timestamp_obj"])
     return valid_history
 
 
 def get_latest_entry(valid_history):
-    """Get the latest non-initial entry from history"""
-    for entry in reversed(
-        valid_history
-    ):  # Go through in reverse to find the most recent
+    for entry in reversed(valid_history):
         if entry["phase"] != "initial":
             return entry
     return None
 
 
 def get_last_days_data(valid_history, days_to_show=7):
-    """Get data for the last specified number of days, including status details"""
     now = datetime.now(timezone.utc)
     last_days = []
     for i in range(days_to_show):
         day = (now - timedelta(days=i)).date()
-        # Get entries for this day
         day_entries = [
-            entry
-            for entry in valid_history
-            if entry["phase"] != "initial" and entry["timestamp_obj"].date() == day
+            e
+            for e in valid_history
+            if e["phase"] != "initial" and e["timestamp_obj"].date() == day
         ]
         last_days.append((day, day_entries))
-    return last_days
+    return last_days[::-1]
+
+
+# -------------------------------
+# SVG 生成函数
+# -------------------------------
 
 
 def generate_svg_content(latest_entry, last_days, days_to_show):
-    """Generate SVG content from the data"""
-    # Constants for layout - redesigned for heat map style
-    cell_size = 20
-    cell_margin = 2
-    cell_total = cell_size + 2 * cell_margin
-    header_height = 100
-    footer_height = 40
+    # 布局参数
+    header_height = 160  # 标题 + 最新状态区域高度
+    footer_height = 80  # Legend区域高度
+    line_height = 30  # 每天圆圈行高度
+    circle_radius = 8
+    circle_margin = 6
+    label_width = 100  # 左边日期显示宽度
+    left_padding = 30  # 左边总留白
 
-    # Calculate dimensions for heat map grid
-    width = max(400, (days_to_show * cell_total) + 60)  # Minimum width for readability
-    height = header_height + footer_height + cell_total
+    # 计算 SVG 宽度
+    max_commits = max((len(entries) for _, entries in last_days), default=1)
+    grid_width = max_commits * (circle_radius * 2 + circle_margin)
+    width = max(650, left_padding + label_width + grid_width + 50)
+    height = header_height + len(last_days) * line_height + footer_height + 20
 
-    # Start SVG content
     svg_content = [
-        f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">'
+        f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">',
+        # 背景和渐变定义
+        "<defs>",
+        '<linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">',
+        '<stop offset="0%" stop-color="#f5f7fa"/>',
+        '<stop offset="100%" stop-color="#e4e7eb"/>',
+        "</linearGradient>",
+        '<linearGradient id="syncedGrad" x1="0" y1="0" x2="0" y2="1">',
+        '<stop offset="0%" stop-color="#2ecc71"/>',
+        '<stop offset="100%" stop-color="#27ae60"/>',
+        "</linearGradient>",
+        '<linearGradient id="unsyncedGrad" x1="0" y1="0" x2="0" y2="1">',
+        '<stop offset="0%" stop-color="#e74c3c"/>',
+        '<stop offset="100%" stop-color="#c0392b"/>',
+        "</linearGradient>",
+        '<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">',
+        '<feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#888"/>',
+        "</filter>",
+        "</defs>",
+        f'<rect width="100%" height="100%" fill="url(#bgGrad)"/>',
+        # 标题
+        '<text x="30" y="35" font-size="24" font-weight="bold" fill="#2c3e50">NUR Sync Status</text>',
     ]
 
-    # Add title with styling
-    svg_content.append(
-        f'<text x="20" y="25" font-size="18" font-weight="bold" fill="#333">NUR Sync Status</text>'
-    )
-
-    # Show latest status info with improved formatting and color
+    # 最新状态
     if latest_entry:
-        status_color = "#4CAF50" if latest_entry["status"] == "synced" else "#F44336"
-        status_icon = "🟢" if latest_entry["status"] == "synced" else "🔴"
+        status_color = "#27ae60" if latest_entry["status"] == "synced" else "#e74c3c"
+        grad_id = "syncedGrad" if latest_entry["status"] == "synced" else "unsyncedGrad"
         svg_content.append(
-            f'<text x="20" y="45" font-size="14" font-weight="bold" fill="{status_color}">Latest: {status_icon} {latest_entry["status"].title()}</text>'
+            '<text x="30" y="70" font-size="16" font-weight="bold" fill="#2c3e50">Latest:</text>'
         )
         svg_content.append(
-            f'<text x="20" y="65" font-size="12" fill="#666">📅 {latest_entry["timestamp_str"]}</text>'
+            f'<circle cx="100" cy="62" r="10" fill="url(#{grad_id})" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>'
         )
         svg_content.append(
-            f'<text x="20" y="80" font-size="12" fill="#666">🔄 Fork: {latest_entry["fork_rev"][:8]}... | 📦 Official: {latest_entry["official_rev"][:8]}...</text>'
+            f'<text x="120" y="70" font-size="16" font-weight="bold" fill="{status_color}">{latest_entry["status"].title()}</text>'
         )
-    else:
         svg_content.append(
-            f'<text x="20" y="45" font-size="12" fill="#999">Latest: No data available</text>'
+            f'<text x="30" y="95" font-size="14" fill="#7f8c8d">📅 {latest_entry["timestamp_str"]}</text>'
+        )
+        svg_content.append(
+            f'<text x="30" y="120" font-size="14" fill="#7f8c8d">🔄 Fork: {latest_entry["fork_rev"][:10]}... | 📦 Official: {latest_entry["official_rev"][:10]}...</text>'
         )
 
-    # Heat map title
+    # 分割线（距离标题足够远）
     svg_content.append(
-        f'<text x="20" y="{header_height - 15}" font-size="14" font-weight="bold" fill="#333">Last {days_to_show} Days Activity</text>'
+        f'<line x1="{left_padding}" y1="140" x2="{width-left_padding}" y2="140" stroke="#bdc3c7" stroke-width="1"/>'
     )
 
-    # Draw heat map grid
-    start_x = (width - days_to_show * cell_total) // 2  # Center the grid
+    # 绘制每日圆圈
+    y_start = 160
+    for idx, (day, entries) in enumerate(last_days):
+        y = y_start + idx * line_height
+        # 日期显示
+        day_label = day.strftime("%Y-%m-%d")
+        svg_content.append(
+            f'<text x="{left_padding}" y="{y+5}" font-size="14" fill="#2c3e50">{day_label}:</text>'
+        )
 
-    for i, (day, day_entries) in enumerate(last_days):
-        x = start_x + i * cell_total + cell_margin
-
-        if day_entries:
-            # Determine color based on the day's status
-            # If any entry is unsynced, make the cell red; if all synced, make it green
-            all_synced = all(entry["status"] == "synced" for entry in day_entries)
-            color = (
-                "#4CAF50" if all_synced else "#F44336"
-            )  # Green if all synced, red otherwise
-
-            # Draw day cell with color based on status
-            svg_content.append(
-                f'<rect x="{x}" y="{header_height}" width="{cell_size}" height="{cell_size}" fill="{color}" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>'
-            )
-
-            # Add day text
-            svg_content.append(
-                f'<text x="{x + cell_size/2}" y="{header_height + cell_size/2 + 5}" font-size="10" text-anchor="middle" fill="white" font-weight="bold">{day.strftime("%d")}</text>'
-            )
+        # 绘制当天圆圈
+        x_start = left_padding + label_width
+        if entries:
+            for j, entry in enumerate(entries):
+                cx = x_start + j * (circle_radius * 2 + circle_margin) + circle_radius
+                color_grad = (
+                    "syncedGrad" if entry["status"] == "synced" else "unsyncedGrad"
+                )
+                svg_content.append(
+                    f'<circle cx="{cx}" cy="{y}" r="{circle_radius}" fill="url(#{color_grad})" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>'
+                )
         else:
-            # Draw a gray cell to indicate no data
+            # 无数据显示灰色圆圈
+            cx = x_start + circle_radius
             svg_content.append(
-                f'<rect x="{x}" y="{header_height}" width="{cell_size}" height="{cell_size}" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>'
-            )
-            svg_content.append(
-                f'<text x="{x + cell_size/2}" y="{header_height + cell_size/2 + 5}" font-size="10" text-anchor="middle" fill="#666">-</text>'
+                f'<circle cx="{cx}" cy="{y}" r="{circle_radius}" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>'
             )
 
-    # Add day labels (name of the day) below the heat map
-    for i, (day, day_entries) in enumerate(last_days):
-        x = start_x + i * cell_total + cell_total // 2
-        day_name = day.strftime("%a")  # Abbreviated day name (Mon, Tue, etc.)
-        svg_content.append(
-            f'<text x="{x}" y="{header_height + cell_total + 15}" font-size="10" text-anchor="middle" fill="#666">{day_name}</text>'
-        )
-
-    # Add legend
-    legend_x = 20
-    legend_y = height - 25
+    # Legend
+    legend_y = height - 60
+    legend_x = left_padding
     svg_content.append(
-        f'<rect x="{legend_x}" y="{legend_y}" width="12" height="12" fill="#4CAF50" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>'
+        f'<circle cx="{legend_x+8}" cy="{legend_y+8}" r="8" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
     )
     svg_content.append(
-        f'<text x="{legend_x + 20}" y="{legend_y + 10}" font-size="10" fill="#333">Synced</text>'
-    )
-
-    svg_content.append(
-        f'<rect x="{legend_x + 80}" y="{legend_y}" width="12" height="12" fill="#F44336" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>'
+        f'<text x="{legend_x+22}" y="{legend_y+12}" font-size="14" fill="#2c3e50">Synced</text>'
     )
     svg_content.append(
-        f'<text x="{legend_x + 100}" y="{legend_y + 10}" font-size="10" fill="#333">Unsynced</text>'
+        f'<circle cx="{legend_x+120}" cy="{legend_y+8}" r="8" fill="url(#unsyncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
+    )
+    svg_content.append(
+        f'<text x="{legend_x+136}" y="{legend_y+12}" font-size="14" fill="#2c3e50">Unsynced</text>'
+    )
+    svg_content.append(
+        f'<circle cx="{legend_x+240}" cy="{legend_y+8}" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>'
+    )
+    svg_content.append(
+        f'<text x="{legend_x+256}" y="{legend_y+12}" font-size="14" fill="#2c3e50">No Data</text>'
     )
 
-    svg_content.append(
-        f'<rect x="{legend_x + 170}" y="{legend_y}" width="12" height="12" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>'
-    )
-    svg_content.append(
-        f'<text x="{legend_x + 190}" y="{legend_y + 10}" font-size="10" fill="#333">No data</text>'
-    )
-
-    # Close SVG
     svg_content.append("</svg>")
-
     return "\n".join(svg_content)
+
+
+# -------------------------------
+# 主函数
+# -------------------------------
 
 
 def main():
@@ -208,19 +201,8 @@ def main():
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
+    days_to_show = int(sys.argv[3]) if len(sys.argv) >= 4 else 7
 
-    # 设置默认值
-    days_to_show = 7  # 默认显示7天
-
-    # 解析可选参数
-    if len(sys.argv) >= 4:
-        try:
-            days_to_show = int(sys.argv[3])
-        except ValueError:
-            print(f"Error: Days to show must be an integer, got: {sys.argv[3]}")
-            sys.exit(1)
-
-    # Load and process JSON data
     with open(input_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -229,7 +211,6 @@ def main():
     latest_entry = get_latest_entry(valid_history)
     last_days = get_last_days_data(valid_history, days_to_show)
 
-    # Generate and write SVG content
     svg_content = generate_svg_content(latest_entry, last_days, days_to_show)
 
     with open(output_file, "w", encoding="utf-8") as f:

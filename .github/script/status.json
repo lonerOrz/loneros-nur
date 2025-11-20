@@ -1,0 +1,116 @@
+{
+  "history": [
+    {
+      "timestamp": "2025-11-14T08:00:00Z",
+      "fork_rev": "0000aaaa",
+      "official_rev": "0000aaaa",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-14T14:00:00Z",
+      "fork_rev": "0000aabb",
+      "official_rev": "0000aacc",
+      "status": "unsynced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-15T09:00:00Z",
+      "fork_rev": "1111bbbb",
+      "official_rev": "1111bbbb",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-16T10:00:00Z",
+      "fork_rev": "2222cccc",
+      "official_rev": "3333dddd",
+      "status": "unsynced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-16T11:00:00Z",
+      "fork_rev": "2222ccee",
+      "official_rev": "3333ddff",
+      "status": "unsynced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-16T15:00:00Z",
+      "fork_rev": "2222ccff",
+      "official_rev": "3333ddgg",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-17T12:00:00Z",
+      "fork_rev": "3333dddd",
+      "official_rev": "3333dddd",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-17T13:00:00Z",
+      "fork_rev": "3333ddff",
+      "official_rev": "3333ddgg",
+      "status": "unsynced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-17T18:00:00Z",
+      "fork_rev": "3333ddhh",
+      "official_rev": "3333ddhh",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-18T14:00:00Z",
+      "fork_rev": "4444eeee",
+      "official_rev": "4444eeee",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-19T08:00:00Z",
+      "fork_rev": "aaaa1111",
+      "official_rev": "aaaa1111",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-20T09:00:00Z",
+      "fork_rev": "bbbb2222",
+      "official_rev": "cccc3333",
+      "status": "unsynced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-20T10:00:00Z",
+      "fork_rev": "dddd4444",
+      "official_rev": "dddd4444",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-20T11:00:00Z",
+      "fork_rev": "eeee5555",
+      "official_rev": "eeee5555",
+      "status": "synced",
+      "phase": "initial"
+    },
+    {
+      "timestamp": "invalid-timestamp-format",
+      "fork_rev": "ffff6666",
+      "official_rev": "ffff6666",
+      "status": "synced",
+      "phase": "polled"
+    },
+    {
+      "timestamp": 1234567890,
+      "fork_rev": "gggg7777",
+      "official_rev": "gggg7777",
+      "status": "synced",
+      "phase": "polled"
+    }
+  ]
+}
