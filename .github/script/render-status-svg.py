@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 NUR Sync Status SVG Renderer - 横向时间轴 + 圆点（状态图标右侧）
+紧凑布局，宽度加宽、高度减小，带渐变和阴影效果
 """
 
 import json
@@ -69,22 +70,22 @@ def get_last_days_data(valid_history, days_to_show=7):
 
 def generate_svg_content(latest_entry, last_days, days_to_show):
     # 布局参数
-    header_height = 160
-    footer_height = 80
-    line_height = 30
+    header_height = 120
+    footer_height = 50
+    line_height = 25
     circle_radius = 8
     circle_margin = 16
-    label_width = 140
+    label_width = 100
     left_padding = 30
 
     # SVG 尺寸计算
     max_commits = max((len(entries) for _, entries in last_days), default=1)
     grid_width = max_commits * (circle_radius * 2 + circle_margin)
-    width = max(750, left_padding + label_width + grid_width + 50)
+    width = max(900, left_padding + label_width + grid_width + 80)
     height = header_height + len(last_days) * line_height + footer_height + 20
 
     svg_content = [
-        f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">',
+        f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">',
         # 定义渐变和阴影
         "<defs>",
         '<linearGradient id="syncedGrad" x1="0" y1="0" x2="0" y2="1">',
@@ -110,34 +111,33 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
         status_color = "#27ae60" if latest_entry["status"] == "synced" else "#e74c3c"
         grad_id = "syncedGrad" if latest_entry["status"] == "synced" else "unsyncedGrad"
         svg_content.append(
-            '<text x="30" y="70" font-size="16" font-weight="bold" fill="#2c3e50">Latest:</text>'
+            '<text x="30" y="65" font-size="16" font-weight="bold" fill="#2c3e50">Latest:</text>'
         )
         svg_content.append(
-            f'<circle cx="100" cy="62" r="10" fill="url(#{grad_id})" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>'
+            f'<circle cx="100" cy="57" r="10" fill="url(#{grad_id})" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>'
         )
         svg_content.append(
-            f'<circle cx="100" cy="62" r="4" fill="white" opacity="0.4"/>'
+            f'<circle cx="100" cy="57" r="4" fill="white" opacity="0.4"/>'
         )
         svg_content.append(
-            f'<text x="120" y="70" font-size="16" font-weight="bold" fill="{status_color}">{latest_entry["status"].title()}</text>'
+            f'<text x="120" y="65" font-size="16" font-weight="bold" fill="{status_color}">{latest_entry["status"].title()}</text>'
         )
         svg_content.append(
-            f'<text x="30" y="95" font-size="14" fill="#7f8c8d">📅 {latest_entry["timestamp_str"]}</text>'
+            f'<text x="30" y="90" font-size="14" fill="#7f8c8d">📅 {latest_entry["timestamp_str"]}</text>'
         )
         svg_content.append(
-            f'<text x="30" y="120" font-size="14" fill="#7f8c8d">🔄 Fork: {latest_entry["fork_rev"][:10]}... | 📦 Official: {latest_entry["official_rev"][:10]}...</text>'
+            f'<text x="30" y="110" font-size="14" fill="#7f8c8d">🔄 Fork: {latest_entry["fork_rev"][:10]}... | 📦 Official: {latest_entry["official_rev"][:10]}...</text>'
         )
 
     # 分割线
     svg_content.append(
-        f'<line x1="{left_padding}" y1="140" x2="{width-left_padding}" y2="140" stroke="#bdc3c7" stroke-width="1"/>'
+        f'<line x1="{left_padding}" y1="135" x2="{width-left_padding}" y2="135" stroke="#bdc3c7" stroke-width="1"/>'
     )
 
     # 横向时间轴 + 圆点
-    y_start = 160
+    y_start = 145
     for idx, (day, entries) in enumerate(last_days):
         y = y_start + idx * line_height
-        # 左侧日期美化
         day_label = day.strftime("%Y-%m-%d")
         svg_content.append(
             f'<text x="{left_padding}" y="{y+5}" font-size="14" fill="#2c3e50">{day_label}:</text>'
@@ -148,15 +148,12 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
             for j, entry in enumerate(entries):
                 cx = x_start + j * (circle_radius * 2 + circle_margin) + circle_radius
                 grad = "syncedGrad" if entry["status"] == "synced" else "unsyncedGrad"
-                # 圆点
                 svg_content.append(
                     f'<circle cx="{cx}" cy="{y}" r="{circle_radius}" fill="url(#{grad})" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>'
                 )
-                # 高光
                 svg_content.append(
                     f'<circle cx="{cx}" cy="{y-2}" r="3" fill="white" opacity="0.4"/>'
                 )
-                # 连接线
                 if j > 0:
                     prev_cx = (
                         x_start
@@ -166,7 +163,6 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
                     svg_content.append(
                         f'<line x1="{prev_cx}" y1="{y}" x2="{cx}" y2="{y}" stroke="#bdc3c7" stroke-width="2"/>'
                     )
-            # 最后一个圆点图标放在右侧
             last_entry = entries[-1]
             cx_last = (
                 x_start
@@ -183,26 +179,30 @@ def generate_svg_content(latest_entry, last_days, days_to_show):
                 f'<circle cx="{cx}" cy="{y}" r="{circle_radius}" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>'
             )
 
-    # Legend
-    legend_y = height - 40
+    # Legend 紧贴时间轴
+    legend_y = y_start + len(last_days) * line_height + 10
     legend_x = left_padding
+    legend_radius = 6
+    legend_font = 12
+    legend_gap = 10
+
     svg_content.append(
-        f'<circle cx="{legend_x+8}" cy="{legend_y+8}" r="8" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
+        f'<circle cx="{legend_x+legend_radius}" cy="{legend_y+legend_radius}" r="{legend_radius}" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
     )
     svg_content.append(
-        f'<text x="{legend_x+22}" y="{legend_y+12}" font-size="14" fill="#2c3e50">Synced</text>'
+        f'<text x="{legend_x+legend_radius+legend_gap}" y="{legend_y+legend_radius+4}" font-size="{legend_font}" fill="#2c3e50">Synced</text>'
     )
     svg_content.append(
-        f'<circle cx="{legend_x+120}" cy="{legend_y+8}" r="8" fill="url(#unsyncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
+        f'<circle cx="{legend_x+120+legend_radius}" cy="{legend_y+legend_radius}" r="{legend_radius}" fill="url(#unsyncedGrad)" stroke="#2c3e50" stroke-width="1"/>'
     )
     svg_content.append(
-        f'<text x="{legend_x+136}" y="{legend_y+12}" font-size="14" fill="#2c3e50">Unsynced</text>'
+        f'<text x="{legend_x+120+legend_radius+legend_gap}" y="{legend_y+legend_radius+4}" font-size="{legend_font}" fill="#2c3e50">Unsynced</text>'
     )
     svg_content.append(
-        f'<circle cx="{legend_x+240}" cy="{legend_y+8}" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>'
+        f'<circle cx="{legend_x+240+legend_radius}" cy="{legend_y+legend_radius}" r="{legend_radius}" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>'
     )
     svg_content.append(
-        f'<text x="{legend_x+256}" y="{legend_y+12}" font-size="14" fill="#2c3e50">No Data</text>'
+        f'<text x="{legend_x+240+legend_radius+legend_gap}" y="{legend_y+legend_radius+4}" font-size="{legend_font}" fill="#2c3e50">No Data</text>'
     )
 
     svg_content.append("</svg>")
