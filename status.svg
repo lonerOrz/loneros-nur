@@ -15,11 +15,11 @@
 <rect width="100%" height="100%" fill="#f5f7fa"/>
 <text x="30" y="35" font-size="24" font-weight="bold" fill="#2c3e50">NUR Sync Status</text>
 <text x="30" y="65" font-size="16" font-weight="bold" fill="#2c3e50">Latest:</text>
-<circle cx="100" cy="57" r="10" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>
+<circle cx="100" cy="57" r="10" fill="url(#unsyncedGrad)" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>
 <circle cx="100" cy="57" r="4" fill="white" opacity="0.4"/>
-<text x="120" y="65" font-size="16" font-weight="bold" fill="#27ae60">Synced</text>
-<text x="30" y="90" font-size="14" fill="#7f8c8d">📅 2025-11-20T03:03:52Z</text>
-<text x="30" y="110" font-size="14" fill="#7f8c8d">🔄 Fork: 5f68f06518... | 📦 Official: 5f68f06518...</text>
+<text x="120" y="65" font-size="16" font-weight="bold" fill="#e74c3c">Unsynced</text>
+<text x="30" y="90" font-size="14" fill="#7f8c8d">📅 2025-11-20T03:05:44Z</text>
+<text x="30" y="110" font-size="14" fill="#7f8c8d">🔄 Fork: 8c72772a98... | 📦 Official: ...</text>
 <line x1="30" y1="135" x2="870" y2="135" stroke="#bdc3c7" stroke-width="1"/>
 <text x="30" y="150" font-size="14" fill="#2c3e50">2025-11-14:</text>
 <circle cx="138" cy="145" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
