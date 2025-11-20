@@ -1,32 +1,47 @@
-<svg width="400" height="164" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
-<text x="20" y="25" font-size="18" font-weight="bold" fill="#333">NUR Sync Status</text>
-<text x="20" y="45" font-size="12" fill="#999">Latest: No data available</text>
-<text x="20" y="85" font-size="14" font-weight="bold" fill="#333">Last 7 Days Activity</text>
-<rect x="118" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="128.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="142" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="152.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="166" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="176.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="190" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="200.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="214" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="224.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="238" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="248.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<rect x="262" y="100" width="20" height="20" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="3" ry="3"/>
-<text x="272.0" y="115.0" font-size="10" text-anchor="middle" fill="#666">-</text>
-<text x="128" y="139" font-size="10" text-anchor="middle" fill="#666">Thu</text>
-<text x="152" y="139" font-size="10" text-anchor="middle" fill="#666">Wed</text>
-<text x="176" y="139" font-size="10" text-anchor="middle" fill="#666">Tue</text>
-<text x="200" y="139" font-size="10" text-anchor="middle" fill="#666">Mon</text>
-<text x="224" y="139" font-size="10" text-anchor="middle" fill="#666">Sun</text>
-<text x="248" y="139" font-size="10" text-anchor="middle" fill="#666">Sat</text>
-<text x="272" y="139" font-size="10" text-anchor="middle" fill="#666">Fri</text>
-<rect x="20" y="139" width="12" height="12" fill="#4CAF50" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>
-<text x="40" y="149" font-size="10" fill="#333">Synced</text>
-<rect x="100" y="139" width="12" height="12" fill="#F44336" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>
-<text x="120" y="149" font-size="10" fill="#333">Unsynced</text>
-<rect x="190" y="139" width="12" height="12" fill="#BDBDBD" stroke="#000" stroke-width="0.5" rx="2" ry="2"/>
-<text x="210" y="149" font-size="10" fill="#333">No data</text>
+<svg width="650" height="470" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+<defs>
+<linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#f5f7fa"/>
+<stop offset="100%" stop-color="#e4e7eb"/>
+</linearGradient>
+<linearGradient id="syncedGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#2ecc71"/>
+<stop offset="100%" stop-color="#27ae60"/>
+</linearGradient>
+<linearGradient id="unsyncedGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#e74c3c"/>
+<stop offset="100%" stop-color="#c0392b"/>
+</linearGradient>
+<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+<feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#888"/>
+</filter>
+</defs>
+<rect width="100%" height="100%" fill="url(#bgGrad)"/>
+<text x="30" y="35" font-size="24" font-weight="bold" fill="#2c3e50">NUR Sync Status</text>
+<text x="30" y="70" font-size="16" font-weight="bold" fill="#2c3e50">Latest:</text>
+<circle cx="100" cy="62" r="10" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>
+<text x="120" y="70" font-size="16" font-weight="bold" fill="#27ae60">Synced</text>
+<text x="30" y="95" font-size="14" fill="#7f8c8d">📅 2025-11-20T02:00:42Z</text>
+<text x="30" y="120" font-size="14" fill="#7f8c8d">🔄 Fork: 07786b36f5... | 📦 Official: 07786b36f5...</text>
+<line x1="30" y1="140" x2="620" y2="140" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="165" font-size="14" fill="#2c3e50">2025-11-14:</text>
+<circle cx="138" cy="160" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="195" font-size="14" fill="#2c3e50">2025-11-15:</text>
+<circle cx="138" cy="190" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="225" font-size="14" fill="#2c3e50">2025-11-16:</text>
+<circle cx="138" cy="220" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="255" font-size="14" fill="#2c3e50">2025-11-17:</text>
+<circle cx="138" cy="250" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="285" font-size="14" fill="#2c3e50">2025-11-18:</text>
+<circle cx="138" cy="280" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="315" font-size="14" fill="#2c3e50">2025-11-19:</text>
+<circle cx="138" cy="310" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="30" y="345" font-size="14" fill="#2c3e50">2025-11-20:</text>
+<circle cx="138" cy="340" r="8" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1" filter="url(#shadow)"/>
+<circle cx="38" cy="418" r="8" fill="url(#syncedGrad)" stroke="#2c3e50" stroke-width="1"/>
+<text x="52" y="422" font-size="14" fill="#2c3e50">Synced</text>
+<circle cx="150" cy="418" r="8" fill="url(#unsyncedGrad)" stroke="#2c3e50" stroke-width="1"/>
+<text x="166" y="422" font-size="14" fill="#2c3e50">Unsynced</text>
+<circle cx="270" cy="418" r="8" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+<text x="286" y="422" font-size="14" fill="#2c3e50">No Data</text>
 </svg>
