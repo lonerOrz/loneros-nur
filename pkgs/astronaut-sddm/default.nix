@@ -11,7 +11,7 @@ let
   overwriteConfig = (formats.ini { }).generate "${theme}.conf.user" themeConfig;
 in
 stdenvNoCC.mkDerivation rec {
-  name = "astronaut";
+  pname = "astronaut";
   version = "11c0bf6147bbea466ce2e2b0559e9a9abdbcc7c3";
 
   src = fetchFromGitHub {
