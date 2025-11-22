@@ -12,13 +12,13 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "astronaut";
-  version = "11c0bf6147bbea466ce2e2b0559e9a9abdbcc7c3";
+  version = "0-unstable-2025-11-22";
 
   src = fetchFromGitHub {
     owner = "Keyitdev";
     repo = "sddm-astronaut-theme";
-    rev = version;
-    hash = "sha256-gBSz+k/qgEaIWh1Txdgwlou/Lfrfv3ABzyxYwlrLjDk=";
+    rev = "3acfa1b9f643265bcccf524a86e5c4964c4ba52c";
+    hash = "sha256-ee7ta/yiRieaZxitq5LQZ5dwAkGLVjjmnekXRu6yh5E=";
   };
 
   passthru.autoUpdate = false;
@@ -34,7 +34,7 @@ stdenvNoCC.mkDerivation rec {
   dontWrapQtApps = true;
 
   installPhase = ''
-    themeDir="$out/share/sddm/themes/${name}"
+    themeDir="$out/share/sddm/themes/${pname}"
 
     mkdir -p $themeDir
     cp -r $src/* $themeDir
