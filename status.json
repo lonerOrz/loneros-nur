@@ -90,6 +90,13 @@
       "official_rev": "5ccefb9e52a998890416158bde930cc4da3931d2",
       "status": "synced",
       "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-22T14:10:43Z",
+      "fork_rev": "8ca1cca16360fe2490b173721bf176d81c246a96",
+      "official_rev": null,
+      "status": "unsynced",
+      "phase": "initial"
     }
   ]
 }
