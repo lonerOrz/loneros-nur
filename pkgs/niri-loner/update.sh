@@ -4,6 +4,8 @@ set -euo pipefail
 OWNER="lonerOrz"
 REPO="niri"
 BRANCH="feat/blur"
+package_name="niri-loner"
+pname="niri-blur"
 
 FAST_MODE=false
 if [[ ${1:-} == "--fast" ]]; then
@@ -12,7 +14,6 @@ fi
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 package_file="$script_dir/default.nix"
-pname="niri-blur"
 
 cd "$script_dir/"
 
@@ -43,7 +44,7 @@ dummy_src="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 sed -i "s|hash = \".*\";|hash = \"$dummy_src\";|" "$package_file"
 
 echo "Building to get src hash..."
-output=$(nix build "$script_dir/../.."#$pname 2>&1 || true)
+output=$(nix build "$script_dir/../.."#$package_name 2>&1 || true)
 
 src_hash=$(echo "$output" | grep -oP 'got:\s*\Ksha256-[a-zA-Z0-9+/=]+' | head -n1)
 if [ -z "$src_hash" ]; then
@@ -60,7 +61,7 @@ if [ "$FAST_MODE" = false ]; then
   sed -i "s|cargoHash = \".*\";|cargoHash = \"$dummy_cargo\";|" "$package_file"
 
   echo "Building to get Cargo hash..."
-  output=$(NIX_BUILD_CORES=1 nix build "$script_dir/../.."#$pname 2>&1 || true)
+  output=$(NIX_BUILD_CORES=1 nix build "$script_dir/../.."#$package_name 2>&1 || true)
 
   cargo_hash=$(echo "$output" | grep -oP 'got:\s*\Ksha256-[a-zA-Z0-9+/=]+' | head -n1)
   if [ -z "$cargo_hash" ]; then
