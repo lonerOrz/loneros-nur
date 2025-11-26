@@ -237,6 +237,13 @@
       "official_rev": null,
       "status": "unsynced",
       "phase": "initial"
+    },
+    {
+      "timestamp": "2025-11-26T21:05:23Z",
+      "fork_rev": "390516727d630a0527a435d3142948b6c4b93e42",
+      "official_rev": "390516727d630a0527a435d3142948b6c4b93e42",
+      "status": "synced",
+      "phase": "polled"
     }
   ]
 }
