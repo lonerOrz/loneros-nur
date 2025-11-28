@@ -286,6 +286,13 @@
       "official_rev": "3b348601c122d7587f7a34fa291f7b6baf219a39",
       "status": "synced",
       "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-28T20:50:07Z",
+      "fork_rev": "ef9bb8138a0512f8a93f8e71b8fcce24e7cf5551",
+      "official_rev": null,
+      "status": "unsynced",
+      "phase": "initial"
     }
   ]
 }
