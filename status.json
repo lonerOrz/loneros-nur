@@ -300,6 +300,13 @@
       "official_rev": "ef9bb8138a0512f8a93f8e71b8fcce24e7cf5551",
       "status": "synced",
       "phase": "polled"
+    },
+    {
+      "timestamp": "2025-11-29T11:13:33Z",
+      "fork_rev": "cf2b8be184090bc073bb2652d9f1a67d2e258a90",
+      "official_rev": null,
+      "status": "unsynced",
+      "phase": "initial"
     }
   ]
 }
