@@ -412,6 +412,13 @@
       "official_rev": null,
       "status": "unsynced",
       "phase": "initial"
+    },
+    {
+      "timestamp": "2025-12-04T21:00:48Z",
+      "fork_rev": "764f863a738fd6772ffb7828e6705fadd787cc46",
+      "official_rev": "764f863a738fd6772ffb7828e6705fadd787cc46",
+      "status": "synced",
+      "phase": "polled"
     }
   ]
 }
