@@ -16,6 +16,7 @@
   qt6,
   abseil-cpp,
   wayland,
+  libxml2,
 }:
 
 let
@@ -87,6 +88,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     qt6.qtsvg
     qt6.qtwayland
     wayland
+    libxml2
   ];
 
   configurePhase = ''
