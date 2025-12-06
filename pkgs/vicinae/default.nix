@@ -23,8 +23,8 @@ let
   version = "0.16.12";
 
   srcHash = "sha256-GolXMuAvhWqljCdMo/9hlY0Vo52Bxx+dnLfYQWr9tk8=";
-  apiDepsHash = "sha256-4OgVCnw5th2TcXszVY5G9ENr3/Y/eR2Kd45DbUhQRNk=";
-  extensionManagerDepsHash = "krDFHTG8irgVk4a79LMz148drLgy2oxEoHCKRpur1R4=";
+  apiDepsHash = "sha256-UsTpMR23UQBRseRo33nbT6z/UCjZByryWfn2AQSgm6U=";
+  extensionManagerDepsHash = "sha256-wl8FDFB6Vl1zD0/s2EbU6l1KX4rwUW6dOZof4ebMMO8=";
 
   src = fetchFromGitHub {
     owner = "vicinaehq";
