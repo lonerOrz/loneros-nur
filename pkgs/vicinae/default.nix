@@ -4,24 +4,17 @@
   cmake,
   pkg-config,
   kdePackages,
-  rapidfuzz-cpp,
   protobuf,
-  grpc-tools,
   nodejs,
-  minizip-ng,
   cmark-gfm,
   libqalculate,
   ninja,
   lib,
   fetchNpmDeps,
-  protoc-gen-js,
-  rsync,
-  which,
-  autoPatchelfHook,
   writeShellScriptBin,
   minizip,
   qt6,
-  typescript,
+  abseil-cpp,
   wayland,
 }:
 
@@ -30,8 +23,8 @@ let
   version = "0.16.12";
 
   srcHash = "sha256-GolXMuAvhWqljCdMo/9hlY0Vo52Bxx+dnLfYQWr9tk8=";
-  apiDepsHash = "sha256-UsTpMR23UQBRseRo33nbT6z/UCjZByryWfn2AQSgm6U=";
-  extensionManagerDepsHash = "sha256-wl8FDFB6Vl1zD0/s2EbU6l1KX4rwUW6dOZof4ebMMO8=";
+  apiDepsHash = "sha256-4OgVCnw5th2TcXszVY5G9ENr3/Y/eR2Kd45DbUhQRNk=";
+  extensionManagerDepsHash = "krDFHTG8irgVk4a79LMz148drLgy2oxEoHCKRpur1R4=";
 
   src = fetchFromGitHub {
     owner = "vicinaehq";
@@ -73,40 +66,27 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   NIX_CFLAGS_COMPILE = "-O3 -march=native -mtune=native"; # native
 
   nativeBuildInputs = [
-    ts-protoc-gen-wrapper
-    extensionManagerDeps
-    autoPatchelfHook
     cmake
     ninja
     nodejs
     pkg-config
-    qt6.wrapQtAppsHook
-    rapidfuzz-cpp
-    protoc-gen-js
     protobuf
-    grpc-tools
-    which
-    rsync
-    typescript
+    qt6.wrapQtAppsHook
   ];
 
   buildInputs = [
+    abseil-cpp
+    cmark-gfm
+    kdePackages.layer-shell-qt
+    kdePackages.qtkeychain
+    libqalculate
+    minizip
+    nodejs
+    protobuf
     qt6.qtbase
     qt6.qtsvg
-    qt6.qttools
     qt6.qtwayland
-    qt6.qtdeclarative
-    qt6.qt5compat
     wayland
-    kdePackages.qtkeychain
-    kdePackages.layer-shell-qt
-    minizip
-    grpc-tools
-    protobuf
-    nodejs
-    minizip-ng
-    cmark-gfm
-    libqalculate
   ];
 
   configurePhase = ''
