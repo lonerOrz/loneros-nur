@@ -1,5 +1,5 @@
 {
-  stdenv,
+  gcc15Stdenv,
   fetchFromGitHub,
   cmake,
   pkg-config,
@@ -56,7 +56,7 @@ let
     hash = "${extensionManagerDepsHash}";
   };
 in
-stdenv.mkDerivation (finalAttrs: {
+gcc15Stdenv.mkDerivation (finalAttrs: {
   inherit pname version src;
 
   cmakeFlags = [
