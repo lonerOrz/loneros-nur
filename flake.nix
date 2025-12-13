@@ -10,7 +10,7 @@
   };
 
   outputs =
-    {
+    inputs@{
       self,
       nixpkgs,
       rust-overlay,
@@ -28,17 +28,23 @@
       legacyPackages = forAllSystems (
         system:
         let
+
+          lonerOverlay = (import ./overlays/default.nix { flakes = inputs; });
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
             overlays = [
               rust-overlay.overlays.default
+              lonerOverlay
             ];
           };
+          overlayPkgs = lonerOverlay pkgs pkgs;
 
-          legacyPkgs = import ./default.nix {
-            inherit pkgs;
-          };
+          legacyPkgs =
+            import ./default.nix {
+              inherit pkgs;
+            }
+            // overlayPkgs;
         in
         legacyPkgs
       );
