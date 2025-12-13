@@ -20,7 +20,7 @@
 }:
 
 python3Packages.buildPythonApplication {
-  pname = "linux-desktop-gremlin";
+  pname = "gremlin";
   version = "0-unstable-2025-12-11";
 
   src = fetchFromGitHub {
@@ -34,10 +34,18 @@ python3Packages.buildPythonApplication {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "linux-desktop-gremlin";
-      desktopName = "Linux Desktop Gremlin";
+      name = "gremlin";
+      desktopName = "Gremlin";
       icon = "linux-desktop-gremlin";
-      exec = "linux-desktop-gremlin";
+      exec = "gremlin";
+      comment = "Linux desktop gremlin";
+      categories = [ "Utility" ];
+    })
+    (makeDesktopItem {
+      name = "gremlin-picker";
+      desktopName = "Gremlin Picker";
+      icon = "linux-desktop-gremlin";
+      exec = "gremlin-picker";
       comment = "Pick your favorite gremlin";
       categories = [ "Utility" ];
     })
@@ -90,6 +98,9 @@ python3Packages.buildPythonApplication {
       $out/share/linux-desktop-gremlin/scripts/gremlin-picker.sh
 
     install -Dm644 $src/icon.png $out/share/icons/hicolor/256x256/apps/linux-desktop-gremlin.png
+
+    mkdir -p $out/{bin,libexec}
+    ln -s $out/bin/linux-desktop-gremlin $out/bin/gremlin
   '';
 
   postFixup =
@@ -107,6 +118,7 @@ python3Packages.buildPythonApplication {
         --set QT_QPA_PLATFORM xcb \
         --prefix LD_LIBRARY_PATH : ${pipewire}/lib \
         --prefix PATH : ${binPath}
+
       makeWrapper $out/share/linux-desktop-gremlin/scripts/gremlin-picker.sh $out/bin/gremlin-picker \
         --prefix PYTHONPATH : $out/share/linux-desktop-gremlin \
         --prefix PATH : ${binPath}
@@ -119,7 +131,7 @@ python3Packages.buildPythonApplication {
     homepage = "https://github.com/iluvgirlswithglasses/linux-desktop-gremlin";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    mainProgram = "linux-desktop-gremlin";
+    mainProgram = "gremlin";
     maintainers = with lib.maintainers; [ lonerOrz ];
   };
 }
