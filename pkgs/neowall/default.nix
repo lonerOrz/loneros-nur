@@ -3,8 +3,7 @@
   pkg-config,
   fetchFromGitHub,
   lib,
-  libglvnd,
-  mesa,
+  libGL,
   libX11,
   libXrandr,
   libpng,
@@ -12,6 +11,8 @@
   wayland,
   wayland-scanner,
   wayland-protocols,
+  meson,
+  ninja,
 }:
 
 stdenv.mkDerivation (finallAttrs: {
@@ -28,13 +29,14 @@ stdenv.mkDerivation (finallAttrs: {
   nativeBuildInputs = [
     pkg-config
     wayland-scanner
+    meson
+    ninja
   ];
 
   buildInputs = [
     wayland
     wayland-protocols
-    mesa
-    libglvnd
+    libGL
     libpng
     libjpeg
     libX11
