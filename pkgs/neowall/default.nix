@@ -15,14 +15,14 @@
   ninja,
 }:
 
-stdenv.mkDerivation (finallAttrs: {
+stdenv.mkDerivation (finalAttrs: {
   pname = "neowall";
   version = "0.4.4";
 
   src = fetchFromGitHub {
     owner = "1ay1";
     repo = "neowall";
-    tag = "v${finallAttrs.version}";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-wm9dmWoB+AeygfhPKWYh2Dn1QrXKMJpTcgKPLl0VMTQ=";
   };
 
@@ -46,7 +46,7 @@ stdenv.mkDerivation (finallAttrs: {
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    changelog = "https://github.com/1ay1/neowall/releases/tag/${finallAttrs.src.tag}";
+    changelog = "https://github.com/1ay1/neowall/releases/tag/${finalAttrs.src.tag}";
     description = "GPU shader wallpapers for Wayland";
     homepage = "https://github.com/1ay1/neowall";
     license = lib.licenses.mit;
