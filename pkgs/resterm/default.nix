@@ -32,10 +32,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/unkn0wn-root/resterm";
     mainProgram = "resterm";
     license = lib.licenses.asl20;
-    platforms = with lib.platforms; [
-      linux
-      darwnin
-    ];
+    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ lonerOrz ];
   };
 })
