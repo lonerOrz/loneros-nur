@@ -39,7 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
       ;
     pnpm = pnpm_10;
     fetcherVersion = 3;
-    hash = "sha256-/N7L9HxMHiVXb6FCY5mVz7JaST9xayjsDtXY1/dlMVs=";
+    hash = "";
+    extraPrefetchArgs = [ "--frozen-lockfile" ];
   };
 
   # pnpmWorkspaces = [ "apps/desktop" ];
