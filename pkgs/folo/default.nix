@@ -124,6 +124,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateArgs = [
+    "-vr"
+    ".*/v?(\\d+\\.\\d+\\.\\d+)"
+  ];
+
   meta = {
     description = "Next generation information browser";
     homepage = "https://github.com/RSSNext/Folo";
