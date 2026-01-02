@@ -29,8 +29,8 @@ python312Packages.buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "Fabric-Development";
     repo = "fabric";
-    rev = "0f3d317b047799191ff04a32352a63084eac11d9";
-    hash = "sha256-ELXYed743Xnad8hOMmN5RI0S8w0rltcZbylQjjFiv6s=";
+    rev = "8633df172a3ceee9222e7e583e93717f733d5618";
+    hash = "sha256-jYNudbWogdRX7hYiyuSjK826KKC6ViGTrbO7tHJHIhI=";
   };
 
   buildInputs = [
