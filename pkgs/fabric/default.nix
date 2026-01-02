@@ -30,7 +30,7 @@ python312Packages.buildPythonPackage rec {
     owner = "Fabric-Development";
     repo = "fabric";
     rev = "8633df172a3ceee9222e7e583e93717f733d5618";
-    hash = "sha256-jYNudbWogdRX7hYiyuSjK826KKC6ViGTrbO7tHJHIhI=";
+    hash = "sha256-c56/WC4B4UDiKJ1R6Rz+io9Jt1Mq/WmIqjP1KYJvDf0=";
   };
 
   buildInputs = [
