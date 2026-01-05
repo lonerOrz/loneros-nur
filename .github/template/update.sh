@@ -5,15 +5,15 @@ set -euo pipefail
 # Package metadata（必须配置）
 # =============================================================================
 
-owner="Fabric-Development"
-repo="gray"
-pname="fabric-gray"
+owner="Immelancholy"
+repo="Zarumet"
+pname="zarumet"
 
 PKG_FILE="default.nix"
 BUILD_TARGET=".#${pname}"
 
-# 需要更新的 hash 列表（顺序即 build 顺序）
-HASH_KEYS=(hash)
+# 需要更新的 hash 列表（顺序即 build 顺序，必须满足依赖拓扑）
+HASH_KEYS=(hash cargoHash)
 
 DUMMY_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
@@ -24,13 +24,12 @@ DUMMY_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 package_file="$script_dir/$PKG_FILE"
 
+# 临时工作目录（不污染仓库）
+workdir="$(mktemp -d)"
+build_log="$workdir/build.log"
+
 # =============================================================================
 # （可选）预处理钩子（必须在更新 rev 之前）
-# =============================================================================
-# 语义约束：
-#   - 仅用于依赖修补 / workaround
-#   - 不得修改主 package 的 rev / version
-#   - 默认什么都不做
 # =============================================================================
 
 pre_update_hook() {
@@ -73,6 +72,7 @@ if [[ "$latest_rev" == "$current_rev" ]]; then
   echo "✅ 已是最新版本，无需更新"
   trap - EXIT
   rm -f "$backup"
+  rm -rf "$workdir"
   exit 0
 fi
 
@@ -95,33 +95,45 @@ sed -i -E \
   "$package_file"
 
 # =============================================================================
-# 3️⃣ 逐个 hash 获取（一 build 一 hash）
+# 3️⃣ 逐个 hash 获取（逐次收敛，一 build 一 hash）
+# =============================================================================
+# 语义保证：
+#   - 每一轮 build 都运行在“之前 hash 已修复”的表达式之上
+#   - 支持 hash = "" / hash = "..." 两种状态
+#   - 对 buildRustPackage 是合法且正确的
 # =============================================================================
 
 for key in "${HASH_KEYS[@]}"; do
   echo "🧪 Updating hash: $key"
 
+  # 1️⃣ 写入 dummy（允许空值，字段级锚定）
   sed -i -E \
-    "s|(${key}[[:space:]]*=[[:space:]]*\")[^\"]+(\".*)|\1${DUMMY_HASH}\2|" \
+    "s|(^[[:space:]]*${key}[[:space:]]*=[[:space:]]*\")[^\"]*(\"[[:space:]]*;)|\1${DUMMY_HASH}\2|" \
     "$package_file"
 
-  if nix build "$BUILD_TARGET" 2>build.log; then
+  # 2️⃣ 触发 FOD mismatch
+  if nix build "$BUILD_TARGET" 2>"$build_log"; then
     echo "❌ 预期失败但构建成功（hash 未生效）"
     exit 1
   fi
 
+  # 3️⃣ 从 build log 提取真实 hash
   new_hash="$(
-    grep -oP 'got:\s*\Ksha256-[a-zA-Z0-9+/=]+' build.log | head -n1 || true
+    grep -oP 'got:\s*\Ksha256-[A-Za-z0-9+/=]+' "$build_log" | head -n1 || true
   )"
 
   if [[ -z "$new_hash" ]]; then
     echo "❌ 未能提取 $key"
-    tail -n20 build.log
+    tail -n20 "$build_log"
     exit 1
   fi
 
   echo "✔ $key = $new_hash"
-  sed -i "s|$DUMMY_HASH|$new_hash|" "$package_file"
+
+  # 4️⃣ 回填真实 hash（同样字段级锚定）
+  sed -i -E \
+    "s|(^[[:space:]]*${key}[[:space:]]*=[[:space:]]*\")${DUMMY_HASH}(\"[[:space:]]*;)|\1${new_hash}\2|" \
+    "$package_file"
 done
 
 # =============================================================================
@@ -136,6 +148,7 @@ nix build "$BUILD_TARGET"
 # =============================================================================
 
 trap - EXIT
-rm -f "$backup" build.log
+rm -f "$backup"
+rm -rf "$workdir"
 
 echo "✅ Update finished successfully"
