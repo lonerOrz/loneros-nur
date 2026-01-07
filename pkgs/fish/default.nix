@@ -195,7 +195,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"/bin/ls"' '"${lib.getExe' coreutils "ls"}"'
 
     substituteInPlace src/highlight/highlight.rs \
-      --replace-fail '"/bin/echo"' '"${lib.getExe' coreutils "echo"}"' \
       --replace-fail '"/bin/c"' '"${lib.getExe' coreutils "c"}"' \
       --replace-fail '"/bin/ca"' '"${lib.getExe' coreutils "ca"}"'
 
