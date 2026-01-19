@@ -58,6 +58,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     "CMAKE_INSTALL_BINDIR" = "bin";
     "CMAKE_INSTALL_LIBDIR" = "lib";
     "DCMAKE_INTERPROCEDURAL_OPTIMIZATION" = "ON"; # LTO
+    "INSTALL_BROWSER_NATIVE_HOST" = "OFF";
   };
 
   NIX_CFLAGS_COMPILE = "-O3 -march=native -mtune=native"; # native
