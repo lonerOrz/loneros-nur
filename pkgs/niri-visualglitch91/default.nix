@@ -48,8 +48,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   postPatch = ''
     patchShebangs resources/niri-session
+
     substituteInPlace resources/niri.service \
-      --replace-fail '/usr/bin' "$out/bin"
+      --replace-fail 'ExecStart=niri ' \
+                     'ExecStart=${placeholder "out"}/bin/niri '
   '';
 
   strictDeps = true;
