@@ -87,8 +87,8 @@ python3Packages.buildPythonApplication {
     mkdir -p $out/share/linux-desktop-gremlin/src
 
     cp -r $src/src/* $out/share/linux-desktop-gremlin/src/
-    cp -r $src/spritesheet $out/share/linux-desktop-gremlin/spritesheet
-    cp -r $src/sounds $out/share/linux-desktop-gremlin/sounds
+    cp -r $src/gremlins $out/share/linux-desktop-gremlin/gremlins
+    cp -r $src/images $out/share/linux-desktop-gremlin/images
 
     install -Dm644 $src/config.json \
       $out/share/linux-desktop-gremlin/config.json
