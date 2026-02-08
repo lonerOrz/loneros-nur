@@ -25,8 +25,8 @@ python3Packages.buildPythonApplication {
   src = fetchFromGitHub {
     owner = "iluvgirlswithglasses";
     repo = "linux-desktop-gremlin";
-    rev = "e0e7d1ef337507f625f571150864b83846fec8d1";
-    hash = "sha256-Wi8Jwo2yEoy2VlUJjDIV+wrQ27V3sKob4kmLPI46bgI=";
+    rev = "0568a6b7d0a245800234279b5157b2a0403b1f5a";
+    hash = "sha256-FmJ6+OZXQlRZk2DCH1CYW6WEtVF0DqojwVj0xy8DacY=";
   };
 
   pyproject = true;
@@ -138,6 +138,9 @@ python3Packages.buildPythonApplication {
     '';
 
   passthru.updateScript = ./update.sh;
+
+  # 等待上游素材下载逻辑完善
+  passthru.autoUpdate = false;
 
   meta = {
     description = "Linux Desktop Gremlins brings animated mascots to your Linux desktop.";
