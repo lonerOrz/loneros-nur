@@ -27,7 +27,7 @@ buildGoModule (finalAttrs: {
 
   installPhase = ''
     mkdir -p $out/bin
-    cp $GOPATH/bin/cli $out/bin/dgop
+    cp $GOPATH/bin/dgop $out/bin/dgop
   '';
 
   meta = {
