@@ -22,6 +22,7 @@ python3Packages.buildPythonApplication rec {
   dependencies = with python3Packages; [
     requests
     readchar
+    webcolors
   ];
 
   makeWrapperArgs = [
