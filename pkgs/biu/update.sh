@@ -1,10 +1,10 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p curl gnugrep gnused coreutils nix
+#!nix-shell -i bash -p curl gnugrep gnused coreutils nix git jq
 
 set -euo pipefail
-set -x  # 打印每条执行命令
 
-DEFAULT_NIX="./default.nix"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_NIX="$SCRIPT_DIR/default.nix"
 REPO_OWNER="wood3n"
 REPO_NAME="biu"
 
@@ -18,13 +18,12 @@ echo "[DEBUG] Reading current version"
 current_version=$(grep -oE 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"' "$DEFAULT_NIX" \
                   | head -1 \
                   | cut -d'"' -f2)
-echo "当前版本: $current_version"
+echo "当前版本：$current_version"
 
 echo "[DEBUG] Getting latest version"
-latest_version=$(curl -sL "https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest" \
-    | grep -oP 'tag/v\K[0-9]+\.[0-9]+\.[0-9]+' \
-    | head -1)
-echo "最新版本: $latest_version"
+latest_version=$("$SCRIPT_DIR/../../.github/script/github-tag-fetch.sh" "${REPO_OWNER}/${REPO_NAME}")
+latest_version="${latest_version#v}"
+echo "最新版本：$latest_version"
 
 if [ "$latest_version" = "" ]; then
     echo "[ERROR] Failed to get latest version from GitHub"

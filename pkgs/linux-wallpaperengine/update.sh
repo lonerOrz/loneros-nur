@@ -6,8 +6,10 @@ REPO="linux-wallpaperengine"
 BRANCH="main"
 PKG_FILE="default.nix"
 
-# 获取最新 commit hash（short）
-LATEST_COMMIT=$(git ls-remote "https://github.com/$OWNER/$REPO.git" $BRANCH | awk '{print $1}')
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# 获取最新 commit hash（使用 github-rev-fetch.sh 支持认证避免限流）
+LATEST_COMMIT=$("$SCRIPT_DIR/../../.github/script/github-rev-fetch.sh" "$OWNER/$REPO" "$BRANCH")
 if [ -z "$LATEST_COMMIT" ]; then
   echo "Failed to fetch latest commit hash."
   exit 1

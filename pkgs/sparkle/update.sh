@@ -6,8 +6,10 @@ cd "$(dirname "$0")"
 sources_file="./sources.nix"
 package_file="./default.nix"
 
+script_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../.github/script"
+
 # 获取最新 release tag
-latestTag=$(curl -sL https://api.github.com/repos/INKCR0W/sparkle/releases/latest | jq -r ".tag_name")
+latestTag=$("$script_root/github-tag-fetch.sh" "INKCR0W/sparkle")
 latestVersion="${latestTag#v}"
 
 declare -A archMap=(
