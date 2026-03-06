@@ -22,7 +22,7 @@ echo "Fetching latest version..."
 latest_version=$(npm view @qwen-code/qwen-code version)
 echo "Latest version: $latest_version"
 
-current_version=$(nix eval .#qwen-code.version --raw)
+current_version=$(nix eval .#qwen-code-bin.version --raw)
 echo "Current version: $current_version"
 
 if [ "$latest_version" = "$current_version" ] && [ "${FORCE_UPDATE:-}" != "true" ]; then
