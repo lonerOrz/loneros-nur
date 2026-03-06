@@ -22,9 +22,8 @@ fi
 
 echo "⬇️ Downloading source for tag $LATEST_TAG..."
 
-RAW_SRC_HASH=$(nix-prefetch-git --quiet --url "$REPO_URL" --rev "$LATEST_TAG" | jq -r .sha256)
-SRC_HASH=$(nix hash to-base64 "sha256:$RAW_SRC_HASH")
-echo "Source hash: sha256-$SRC_HASH"
+SRC_HASH=$("$SCRIPT_DIR/../../.github/script/fetch-sri-hash.sh" "$REPO_URL/archive/refs/tags/$LATEST_TAG.tar.gz" --unpack)
+echo "Source hash: $SRC_HASH"
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

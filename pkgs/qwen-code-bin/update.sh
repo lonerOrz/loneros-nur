@@ -53,10 +53,9 @@ cd "$script_dir"
 
 # 计算 tarball URL 和 hash
 tarball_url="https://registry.npmjs.org/@qwen-code/qwen-code/-/qwen-code-${latest_version}.tgz"
-echo "Fetching tarball hash from nix-prefetch-url..."
-raw_hash=$(nix-prefetch-url "$tarball_url")
-tarball_hash=$(nix hash to-base64 "sha256:$raw_hash")
-echo "Tarball hash: sha256-$tarball_hash"
+echo "Fetching tarball hash from fetch-sri-hash.sh..."
+tarball_hash=$("$script_dir/../../.github/script/fetch-sri-hash.sh" "$tarball_url" --unpack)
+echo "Tarball hash: $tarball_hash"
 
 # 获取 npmDeps hash
 echo "Fetching npmDeps hash via prefetch-npm-deps..."

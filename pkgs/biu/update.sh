@@ -45,15 +45,11 @@ x86_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/v${late
 aarch64_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/v${latest_version}/Biu-${latest_version}-linux-arm64.AppImage"
 
 echo "[DEBUG] Prefetching x86_64 hash"
-x86_hash=$(nix-prefetch-url --type sha256 "$x86_url")
-x86_hash=$(nix hash to-base64 "sha256:$x86_hash")
-x86_hash="sha256-$x86_hash"
+x86_hash=$("$SCRIPT_DIR/../../.github/script/fetch-sri-hash.sh" "$x86_url")
 echo "x86_64 hash: $x86_hash"
 
 echo "[DEBUG] Prefetching aarch64 hash"
-aarch64_hash=$(nix-prefetch-url --type sha256 "$aarch64_url")
-aarch64_hash=$(nix hash to-base64 "sha256:$aarch64_hash")
-aarch64_hash="sha256-$aarch64_hash"
+aarch64_hash=$("$SCRIPT_DIR/../../.github/script/fetch-sri-hash.sh" "$aarch64_url")
 echo "aarch64 hash: $aarch64_hash"
 
 echo "[DEBUG] Replacing x86_64 hash"
