@@ -6,8 +6,7 @@
   pkg-config,
   wayland,
   wayland-protocols,
-  mesa,
-  libglvnd,
+  libGL,
   vulkan-loader,
 }:
 
@@ -25,19 +24,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-zBEu/T17W7dwz8jxnXm2NsHaVZo1wDFSW75yiYfRIoY=";
 
   postPatch = ''
-    substituteInPlace build.rs --replace '"git"' '"echo"'
+    substituteInPlace build.rs --replace-fail '"git"' '"echo"'
   '';
 
   nativeBuildInputs = [
     pkg-config
     makeWrapper
-    wayland-protocols
   ];
 
   buildInputs = [
     wayland
-    mesa
-    libglvnd
+    wayland-protocols
+    libGL
     vulkan-loader
   ];
 
@@ -45,8 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/chameleos \
       --prefix LD_LIBRARY_PATH : ${
         lib.makeLibraryPath [
-          mesa
-          libglvnd
+          libGL
           vulkan-loader
         ]
       }
