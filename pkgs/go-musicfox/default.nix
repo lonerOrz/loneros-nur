@@ -23,7 +23,7 @@ buildGoModule rec {
 
   vendorHash = "sha256-j6PFADwjgtOUQlF9rpiOhmLRXUqvqIj1g92HFYUuGFY=";
 
-  subPackages = [ "cmd/musicfox.go" ];
+  subPackages = [ "cmd" ];
 
   ldflags = [
     "-s"
