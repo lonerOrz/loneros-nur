@@ -8,6 +8,8 @@
   pname,
   versionFile,
   fetchMetaCommand,
+  # auto - 自动获取哈希, none - 仅更新元数据
+  updateMethod ? "auto",
 }:
 
 writeShellApplication {
@@ -26,6 +28,7 @@ writeShellApplication {
     PNAME="${pname}"
     VERSION_FILE="${toString versionFile}"
     BACKUP_FILE="$VERSION_FILE.bak"
+    METHOD="${updateMethod}"
 
     _cleanup() {
       local ret=$?
@@ -71,72 +74,77 @@ writeShellApplication {
 
     jq --argjson meta "$meta" '. * $meta' "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
 
-    echo ">> [2/3] Assigning unique dummy hashes..."
-    declare -A placeholders
-    declare -a keys
-    declare -A resolved_map
+    if [ "$METHOD" = "auto" ]; then
+      echo ">> [2/3] Assigning unique dummy hashes..."
+      declare -A placeholders
+      declare -a keys
+      declare -A resolved_map
 
-    mapfile -t keys < <(jq -r 'to_entries[] | select(.value | startswith("sha256-")) | .key' "$VERSION_FILE")
-    total_keys=''${#keys[@]}
+      mapfile -t keys < <(jq -r 'to_entries[] | select(.value | startswith("sha256-")) | .key' "$VERSION_FILE")
+      total_keys=''${#keys[@]}
 
-    if [ "$total_keys" -gt 0 ]; then
-      chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      for i in "''${!keys[@]}"; do
-        key="''${keys[$i]}"
-        char=''${chars:$i:1}
-        placeholder="sha256-$(awk -v c="$char" -v n=43 'BEGIN { for(j=0;j<n;j++) printf "%s", c; }')="
+      if [ "$total_keys" -gt 0 ]; then
+        chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for i in "''${!keys[@]}"; do
+          key="''${keys[$i]}"
+          char=''${chars:$i:1}
+          placeholder="sha256-$(awk -v c="$char" -v n=43 'BEGIN { for(j=0;j<n;j++) printf "%s", c; }')="
 
-        placeholders["$key"]="$placeholder"
-        echo "Assigning: $key -> $char (placeholder)..."
-        jq --arg k "$key" --arg v "$placeholder" '.[$k] = $v' "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
-      done
-
-      echo ">> [3/3] Resolving real hashes via Nix build..."
-      resolved_count=0
-      while [ "$resolved_count" -lt "$total_keys" ]; do
-        echo "Status: Resolved $resolved_count/$total_keys. Building..."
-
-        if nix build ".#$PNAME" --no-link 2>err.txt; then
-          echo "Success: All hashes are now valid."
-          break
-        fi
-
-        mapfile -t specs < <(grep -oP 'specified:.*\Ksha256-[A-Za-z0-9+/=]+' err.txt)
-        mapfile -t gots < <(grep -oP 'got:.*\Ksha256-[A-Za-z0-9+/=]+' err.txt)
-
-        if [ ''${#specs[@]} -eq 0 ]; then
-          echo "Error: Build failed without hash mismatch." >&2
-          exit 1
-        fi
-
-        new_found=false
-        for idx in "''${!specs[@]}"; do
-          spec_hash="''${specs[$idx]}"
-          got_hash="''${gots[$idx]}"
-          for key in "''${keys[@]}"; do
-            [[ -n "''${resolved_map[$key]:-}" ]] && continue
-            prefix=$(echo "''${placeholders[$key]}" | cut -c 1-15)
-            if [[ "$spec_hash" == "$prefix"* ]]; then
-              echo "Resolved $key: $got_hash"
-              jq --arg k "$key" --arg h "$got_hash" '.[$k] = $h' "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
-              resolved_map["$key"]=1
-              resolved_count=$((resolved_count + 1))
-              new_found=true
-              break
-            fi
-          done
+          placeholders["$key"]="$placeholder"
+          echo "Assigning: $key -> $char (placeholder)..."
+          jq --arg k "$key" --arg v "$placeholder" '.[$k] = $v' "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
         done
 
-        if [ "$new_found" = "false" ]; then
-          echo "Error: No new hashes could be resolved from logs." >&2
-          exit 1
-        fi
-        truncate -s 0 err.txt
-      done
-      echo "Finish: All $total_keys hashes updated."
-    else
-      echo "Info: No hashes to update."
+        echo ">> [3/3] Resolving real hashes via Nix build..."
+        resolved_count=0
+        while [ "$resolved_count" -lt "$total_keys" ]; do
+          echo "Status: Resolved $resolved_count/$total_keys. Building..."
+
+          if nix build ".#$PNAME" --no-link 2>err.txt; then
+            echo "Success: All hashes are now valid."
+            break
+          fi
+
+          mapfile -t specs < <(grep -oP 'specified:.*\Ksha256-[A-Za-z0-9+/=]+' err.txt)
+          mapfile -t gots < <(grep -oP 'got:.*\Ksha256-[A-Za-z0-9+/=]+' err.txt)
+
+          if [ ''${#specs[@]} -eq 0 ]; then
+            echo "Error: Build failed without hash mismatch." >&2
+            exit 1
+          fi
+
+          new_found=false
+          for idx in "''${!specs[@]}"; do
+            spec_hash="''${specs[$idx]}"
+            got_hash="''${gots[$idx]}"
+            for key in "''${keys[@]}"; do
+              [[ -n "''${resolved_map[$key]:-}" ]] && continue
+              prefix=$(echo "''${placeholders[$key]}" | cut -c 1-15)
+              if [[ "$spec_hash" == "$prefix"* ]]; then
+                echo "Resolved $key: $got_hash"
+                jq --arg k "$key" --arg h "$got_hash" '.[$k] = $h' "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
+                resolved_map["$key"]=1
+                resolved_count=$((resolved_count + 1))
+                new_found=true
+                break
+              fi
+            done
+          done
+
+          if [ "$new_found" = "false" ]; then
+            echo "Error: No new hashes could be resolved from logs." >&2
+            exit 1
+          fi
+          truncate -s 0 err.txt
+        done
+        echo "Finish: All $total_keys hashes updated."
+      else
+        echo "Info: No hashes to update."
+      fi
+    elif [ "$METHOD" = "none" ]; then
+      echo ">> Strategy 'none': Skipping hash resolution loop."
     fi
+
     echo "Done: $PNAME update successful!"
   '';
 }
