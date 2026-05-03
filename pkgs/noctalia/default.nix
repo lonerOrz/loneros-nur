@@ -41,10 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = current.hash;
   };
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "'-march=native', '-mtune=native'," ""
-  '';
+  postPatch =
+    let
+      shortRev = lib.substring 0 8 finalAttrs.src.rev;
+    in
+    ''
+      substituteInPlace meson.build \
+        --replace-fail "'-march=native', '-mtune=native'," ""
+
+      substituteInPlace src/core/git_revision.h.in \
+        --replace-fail "@VCS_TAG@" "${shortRev}"
+    '';
 
   nativeBuildInputs = [
     meson
