@@ -6,7 +6,7 @@
 
 let
   pname = "openscreen";
-  version = "1.3.0";
+  version = "1.0.0";
 
   src = fetchurl {
     url = "https://github.com/siddharthvaddem/openscreen/releases/download/v${version}/Openscreen-Linux-latest.AppImage";
