@@ -53,13 +53,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "linux-wallpaperengine";
-  version = "0-unstable-2026-05-11";
+  version = "0-unstable-2026-05-12";
 
   src = fetchFromGitHub {
     owner = "Almamu";
     repo = "linux-wallpaperengine";
-    rev = "92db907889e361bf43679d48438bc2a323d2623e";
-    hash = "sha256-lX2Tvdj83RWIn3/kDUj5sWxBDUJKpsDmQzNpJxBVcrQ=";
+    rev = "a8ce9b6aa14cc10f0396bbb74a16ca12ed3990dc";
+    hash = "sha256-S9tPlHugYdg5dbOW4OyDPPfVhxBg6purYhc+Bgt3ovM=";
     fetchSubmodules = true;
   };
 
