@@ -11,7 +11,7 @@
 }:
 
 let
-  customSplash = splash != "";
+  customAssets = splash != "" || background != "";
 in
 stdenvNoCC.mkDerivation {
   pname = "minegrub-theme";
@@ -24,7 +24,7 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-wTLOBy3l/FaIGJWRGFTVYsITkou0lmDU3uAMxvOCCN8=";
   };
 
-  buildInputs = lib.optional customSplash [
+  buildInputs = lib.optionals customAssets [
     fastfetch
     (python3.withPackages (p: [ p.pillow ]))
   ];
@@ -36,16 +36,18 @@ stdenvNoCC.mkDerivation {
     sed -i '/^+ image {/,/^}$/s/top = 40%+[0-9]\+/top = 40%+'"$top_value"'/' minegrub/theme.txt
   '';
 
-  buildPhase = lib.optionalString customSplash ''
+  buildPhase = lib.optionalString customAssets ''
     bg="${background}"
-    if [ ! -f "$bg" ]; then
-      bg="background_options/$bg.png"
+    if [ -n "$bg" ]; then
       if [ ! -f "$bg" ]; then
-        bg=$(find background_options/ -maxdepth 1 -name "*${background}*" -print -quit 2>/dev/null || true)
-      fi
-      if [ ! -f "$bg" ]; then
-        echo "ERROR: background '${background}' not found in background_options/"
-        exit 1
+        bg="background_options/$bg.png"
+        if [ ! -f "$bg" ]; then
+          bg=$(find background_options/ -maxdepth 1 -name "*${background}*" -print -quit 2>/dev/null || true)
+        fi
+        if [ ! -f "$bg" ]; then
+          echo "ERROR: background '${background}' not found in background_options/"
+          exit 1
+        fi
       fi
     fi
     python minegrub/update_theme.py "$bg" "${splash}"
