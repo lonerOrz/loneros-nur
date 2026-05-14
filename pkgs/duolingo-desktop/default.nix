@@ -7,21 +7,24 @@
   makeDesktopItem,
   copyDesktopItems,
   electron_40,
+  callPackage,
 }:
-
+let
+  current = lib.trivial.importJSON ./version.json;
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "duolingo-desktop";
-  version = "4.2.0";
+  version = current.version;
 
   src = fetchzip {
     url = "https://github.com/hmlendea/dl-desktop/releases/download/v${finalAttrs.version}/dl-desktop_${finalAttrs.version}_linux.zip";
-    hash = "sha256-eQm3a+/Va3kr/8gObBTC0YRPguWpzXNGCoJsvq1wgao=";
+    hash = current.hash;
     stripRoot = false;
   };
 
   icon = fetchurl {
     url = "https://raw.githubusercontent.com/hmlendea/dl-desktop/v${finalAttrs.version}/icon.png";
-    hash = "sha256-Z2Qs0DokH/CXqDgA855ELFM+i3qSqSNcA3Xvhmpwjw4=";
+    hash = current.icon_hash;
   };
 
   nativeBuildInputs = [
@@ -65,6 +68,15 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  passthru.updateScript = callPackage ../../utils/update.nix {
+    pname = "duolingo-desktop";
+    versionFile = "pkgs/duolingo-desktop/version.json";
+    fetchMetaCommand = "${(callPackage ../../utils/fetcher.nix { }).githubRelease {
+      owner = "hmlendea";
+      repo = "dl-desktop";
+    }}";
+  };
 
   meta = {
     description = "Unofficial desktop client for Duolingo";
