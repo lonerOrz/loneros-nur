@@ -69,7 +69,8 @@ async function loadPackages() {
   const tbody = document.getElementById("packages-body");
   const loadingRow = document.createElement("tr");
   loadingRow.id = "loading-row";
-  loadingRow.innerHTML = '<td colspan="6" style="text-align:center;padding:48px 0"><div class="spinner"></div><div style="margin-top:16px;color:var(--muted);font-size:14px">Loading packages...</div></td>';
+  loadingRow.innerHTML =
+    '<td colspan="6" style="text-align:center;padding:48px 0"><div class="spinner"></div><div style="margin-top:16px;color:var(--muted);font-size:14px">Loading packages...</div></td>';
   tbody.appendChild(loadingRow);
 
   try {
