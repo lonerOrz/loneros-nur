@@ -156,10 +156,18 @@ body::before {
 
   padding: 14px 18px;
 
-  background: rgba(22, 27, 34, 0.6);
-  border: 1px solid rgba(48, 54, 61, 0.5);
+  background: linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(36, 54, 66, 0.6) 100%);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
   border-radius: 12px;
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(88, 166, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .stat-label {
@@ -172,6 +180,10 @@ body::before {
 
   font-size: 28px;
   font-weight: 700;
+  background: linear-gradient(135deg, #58a6ff 0%, #7ee787 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .search-box {
