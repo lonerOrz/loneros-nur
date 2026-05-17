@@ -70,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       sed -i -E "s|^[[:space:]]*vxwm |$out/bin/vxwm |" rvx
 
+      sed -i '/{ ClkWinTitle.*zoom/d' config.def.h
+
       # custom config
       ${lib.optionalString (conf != null) ''
         cp ${configFile} config.def.h
