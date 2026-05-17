@@ -1,3 +1,54 @@
+const canvas = document.getElementById("particles-canvas");
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function createParticle() {
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.2,
+    vy: (Math.random() - 0.5) * 0.2,
+    size: Math.random() * 2 + 0.5,
+    alpha: Math.random() * 0.4 + 0.1,
+  };
+}
+
+function initParticles() {
+  resizeCanvas();
+  particles = Array(50).fill(null).map(createParticle);
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach((p) => {
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(88, 166, 255, ${p.alpha})`;
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animateParticles);
+}
+
+initParticles();
+animateParticles();
+window.addEventListener("resize", resizeCanvas);
+
 async function loadPackages() {
   try {
     const response = await fetch("./packages.json");
