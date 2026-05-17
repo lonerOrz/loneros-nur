@@ -43,6 +43,23 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
+  position: relative;
+}
+
+#particles-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
 }
 
 .container {
@@ -76,22 +93,6 @@ body {
 
   font-size: 16px;
   line-height: 1.7;
-}
-
-.hero .github-link {
-  margin-top: 12px;
-  margin-bottom: 0;
-}
-
-.hero .github-link a {
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.hero .github-link a:hover {
-  text-decoration: underline;
 }
 
 .toolbar {
@@ -162,10 +163,7 @@ body {
 
   outline: none;
 
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .search-box input:focus {
@@ -173,7 +171,7 @@ body {
 
   box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.15);
 
-  transform: scale(1.01);
+  background: rgba(22, 27, 34, 1);
 }
 
 .search-icon {
@@ -202,13 +200,13 @@ body {
 
   box-shadow: var(--shadow);
 
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -263,12 +261,12 @@ td {
 }
 
 tbody tr {
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 tbody tr:hover {
   background: var(--panel-hover);
-  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 code {
@@ -335,7 +333,6 @@ code {
 .sort-indicator {
   margin-left: 6px;
   opacity: 0.5;
-  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 th[data-sort].sorted .sort-indicator {
@@ -353,12 +350,6 @@ th[data-sort].sorted .sort-indicator {
   color: #79c0ff;
   font-size: 12px;
   font-weight: 600;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.license-badge:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
 }
 
 .homepage-link {
@@ -366,13 +357,10 @@ th[data-sort].sorted .sort-indicator {
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-  transition: transform 0.15s ease;
-  display: inline-block;
 }
 
 .homepage-link:hover {
   text-decoration: underline;
-  transform: translateX(3px);
 }
 
 @media (max-width: 900px) {
