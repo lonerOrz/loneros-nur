@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  flutter338,
+  flutter,
   fetchFromGitHub,
   autoPatchelfHook,
   alsa-lib,
@@ -22,7 +22,7 @@ let
     hash = "sha256-H+zP7LOCyvtlDpxzfUtlodtJk1ZiJJqWcvkdY4aOhj8=";
   };
 in
-flutter338.buildFlutterApplication {
+flutter.buildFlutterApplication {
   pname = "kazumi";
   inherit version src;
 
