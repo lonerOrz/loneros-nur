@@ -20,14 +20,12 @@ let
 
   sanitize = system: toUpper (replaceStrings ["-"] ["_"] system);
 
-  # Shorthand: hashUrls = { x86_64-linux = "url"; }
-  # Long form:  hashUrls = { x86_64-linux = { url = "url"; hashKey = "key"; }; }
-  normalized = builtins.mapAttrs (_system: val:
+  normalize = builtins.mapAttrs (_system: val:
     if builtins.isString val then { url = val; }
     else val
-  ) hashUrls;
+  );
 
-  hashSystems = builtins.attrNames normalized;
+  normalised = normalize hashUrls;
 
   preScript = ''
     VERSION=$(${versionCommand})
@@ -36,15 +34,26 @@ let
     [ "$VERSION" = "$CURRENT_VERSION" ] && cat "${versionFile}" && exit 0
 
     tmpdir=$(mktemp -d)
+
     ${concatStringsSep "\n    " (mapAttrsToList (system: cfg: ''
-      (nix-prefetch-url ${if prefetchUnpack then "--unpack " else ""}"${cfg.url}" --type sha256 \
-        | xargs nix-hash --to-sri --type sha256 > "$tmpdir/${system}") &
-    '') normalized)}
+      _CODE=$(curl -sI -o /dev/null -w "%{http_code}" "${cfg.url}" 2>/dev/null || echo "000")
+      case "$_CODE" in
+        2*|3*)
+          (nix-prefetch-url ${if prefetchUnpack then "--unpack " else ""}"${cfg.url}" --type sha256 \
+            | xargs nix-hash --to-sri --type sha256 > "$tmpdir/${system}") &
+          ;;
+        *)
+          echo "[WARN] ${system}: ${cfg.url} not reachable, using placeholder hash" >&2
+          echo "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" > "$tmpdir/${system}"
+          ;;
+      esac
+    '') normalised)}
+
     wait
 
     ${concatStringsSep "\n    " (mapAttrsToList (system: _: ''
       _HASH_${sanitize system}=$(cat "$tmpdir/${system}")
-    '') normalized)}
+    '') normalised)}
     rm -rf "$tmpdir"
 
     ${extraPreScript}
@@ -52,13 +61,13 @@ let
 
   commands = { version = "echo $VERSION"; } // builtins.listToAttrs (builtins.map
     (system: let
-      cfg = normalized.${system};
+      cfg = normalised.${system};
       hashKey = cfg.hashKey or "${system}-hash";
     in {
       name = hashKey;
       value = "echo $_HASH_${sanitize system}";
     })
-    hashSystems);
+    (builtins.attrNames normalised));
 
 in
 callPackage ./json.nix { inherit preScript commands; }
