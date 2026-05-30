@@ -79,6 +79,12 @@ flutter.buildFlutterApplication {
       };
   };
 
+  postPatch = ''
+    substituteInPlace \
+      lib/pages/plugin_editor/plugin_view_page.dart \
+      --replace-fail "onReorderItem:" "onReorder:"
+  '';
+
   nativeBuildInputs = [ autoPatchelfHook ];
 
   buildInputs = [
