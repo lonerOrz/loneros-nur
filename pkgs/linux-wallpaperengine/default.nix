@@ -18,6 +18,7 @@
   freetype,
   fontconfig,
   libpng,
+  dbus,
 
   # Graphics
   glew,
@@ -138,6 +139,8 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
     fftw
     gmp
+
+    dbus
   ];
 
   cmakeFlags = [
