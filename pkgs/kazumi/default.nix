@@ -83,6 +83,13 @@ flutter.buildFlutterApplication {
     substituteInPlace \
       lib/pages/plugin_editor/plugin_view_page.dart \
       --replace-fail "onReorderItem:" "onReorder:"
+
+    # TabBarScrollController was removed in Flutter 3.44
+    substituteInPlace \
+      lib/bean/dialog/material_bottom_sheet.dart \
+      --replace-fail 'TabBarScrollController' 'ScrollController'
+    sed -i '/scrollController: _scrollController,/d' \
+      lib/bean/dialog/material_bottom_sheet.dart
   '';
 
   nativeBuildInputs = [ autoPatchelfHook ];
