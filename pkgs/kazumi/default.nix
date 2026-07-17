@@ -5,6 +5,8 @@
   fetchFromGitHub,
   autoPatchelfHook,
   alsa-lib,
+  cacert,
+  glib-networking,
   gst_all_1,
   libayatana-appindicator,
   mimalloc,
@@ -90,12 +92,21 @@ flutter.buildFlutterApplication {
       --replace-fail 'TabBarScrollController' 'ScrollController'
     sed -i '/scrollController: _scrollController,/d' \
       lib/bean/dialog/material_bottom_sheet.dart
+
+    # Bangumi mirror search requires KAZUMI_APPID/KAZUMI_KEY injected via
+    # --dart-define in the author's CI (GitHub secrets). Without them the
+    # signed request fails with 401.  Disable the proxy by default so
+    # search falls back to the official Bangumi API directly.
+    sed -i '/_SettingBoxKey.enableBangumiProxy/{n;s/true,/false,/}' \
+      lib/services/storage/settings_keys.dart
   '';
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
   buildInputs = [
     alsa-lib
+    cacert
+    glib-networking
     gst_all_1.gst-libav
     gst_all_1.gst-plugins-bad
     gst_all_1.gst-plugins-base
@@ -111,6 +122,12 @@ flutter.buildFlutterApplication {
     ln -snf ${mpv-unwrapped}/lib/libmpv.so.2 $out/app/$pname/lib/libmpv.so.2
     install -Dm 0644 assets/linux/io.github.Predidit.Kazumi.desktop -t $out/share/applications/
     install -Dm 0644 assets/images/logo/logo_linux.png $out/share/icons/hicolor/512x512/apps/io.github.Predidit.Kazumi.png
+  '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set SSL_CERT_FILE "${cacert}/etc/ssl/certs/ca-bundle.crt"
+    )
   '';
 
   passthru.updateScript = ./update.py;
