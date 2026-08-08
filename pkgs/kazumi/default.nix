@@ -86,10 +86,6 @@ flutter.buildFlutterApplication {
     substituteInPlace lib/pages/plugin_editor/plugin_view_page.dart \
       --replace-fail "onReorderItem:" "onReorder:"
 
-    substituteInPlace lib/bean/dialog/material_bottom_sheet.dart \
-      --replace-fail 'TabBarScrollController' 'ScrollController' \
-      --replace-fail 'scrollController: _scrollController,' ""
-
     # Disable Bangumi proxy by default
     substituteInPlace lib/services/storage/settings_keys.dart \
       --replace-fail $'_SettingBoxKey.enableBangumiProxy,\n    true,' $'_SettingBoxKey.enableBangumiProxy,\n    false,'
