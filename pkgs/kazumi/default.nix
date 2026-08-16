@@ -32,6 +32,8 @@ flutter.buildFlutterApplication {
 
   gitHashes = lib.importJSON ./gitHashes.json;
 
+  flutterBuildFlags = [ "--dart-define=appBuildName=${version}" ];
+
   customSourceBuilders = {
     # unofficial media_kit_libs_linux
     media_kit_libs_linux =
@@ -48,9 +50,7 @@ flutter.buildFlutterApplication {
 
         installPhase = ''
           runHook preInstall
-
           cp -r . "$out"
-
           runHook postInstall
         '';
       };
@@ -82,13 +82,16 @@ flutter.buildFlutterApplication {
   };
 
   postPatch = ''
-    # Fix compatibility issues with Flutter 3.24+ breaking API changes
+    # Fix Flutter 3.24+ API change
     substituteInPlace lib/pages/plugin_editor/plugin_view_page.dart \
       --replace-fail "onReorderItem:" "onReorder:"
 
     # Disable Bangumi proxy by default
-    substituteInPlace lib/services/storage/settings_keys.dart \
-      --replace-fail $'_SettingBoxKey.enableBangumiProxy,\n    true,' $'_SettingBoxKey.enableBangumiProxy,\n    false,'
+    sed -i 's/enableBangumiProxy,\s*true,/enableBangumiProxy,\n    false,/' lib/services/storage/settings_keys.dart
+
+    # Fix upstream bug: appBuildName is a --dart-define var, not from flutter/services.dart
+    sed -i "/import 'package:flutter\/services.dart' show appBuildName;/d" lib/request/config/api_endpoints.dart
+    sed -i "s/appBuildName ?? '0.0.0'/const String.fromEnvironment('appBuildName', defaultValue: '${version}')/" lib/request/config/api_endpoints.dart
   '';
 
   # Ensure HTTPS certificate bundle is available to fix TLS verification
@@ -127,7 +130,7 @@ flutter.buildFlutterApplication {
     homepage = "https://github.com/Predidit/Kazumi";
     mainProgram = "kazumi";
     license = lib.licenses.gpl3Plus;
-    maintainers = [ ];
+    maintainers = [ lib.maintainers.lonerOrz ];
     platforms = lib.platforms.linux;
   };
 }
