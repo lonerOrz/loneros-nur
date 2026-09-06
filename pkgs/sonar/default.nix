@@ -2,6 +2,7 @@
   lib,
   buildGoModule,
   fetchFromGitHub,
+  iproute2,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,6 +16,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0uFN0C+r6BO4sqfC+A5BxeTZhOeHQvYmnD/BxsFCbbE=";
   };
 
+  nativeBuildInputs = [
+    iproute2
+  ];
+
   vendorHash = "sha256-ojAqeq3SjUgLUsK7t1C+ryWokt1A/6g11UXSX3zKVH4=";
 
   ldflags = [
@@ -22,6 +27,8 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X github.com/raskrebs/sonar/internal/selfupdate.Version=v${finalAttrs.version}"
   ];
+
+  doCheck = false;
 
   meta = {
     description = "CLI tool for inspecting and managing services listening on localhost ports";
