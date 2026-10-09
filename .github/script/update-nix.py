@@ -256,17 +256,10 @@ def emit_summary():
 def main():
     parser = argparse.ArgumentParser(description="Update Nix packages")
     parser.add_argument("--package", help="Update a single package")
-    parser.add_argument("--commit", action="store_true", help="Pass --commit")
-    parser.add_argument("--test", action="store_true", help="Pass --test")
-    parser.add_argument("--build", action="store_true", help="Pass --build")
-    parser.add_argument("extra_args", nargs="*", help="Additional args")
+    parser.add_argument("extra_args", nargs="*", help="Additional args forwarded to update scripts")
     args = parser.parse_args()
 
-    extra_args = []
-    if args.commit: extra_args.append("--commit")
-    if args.test: extra_args.append("--test")
-    if args.build: extra_args.append("--build")
-    extra_args.extend(args.extra_args)
+    extra_args = list(args.extra_args)
 
     packages = list_packages()
     if not packages:
