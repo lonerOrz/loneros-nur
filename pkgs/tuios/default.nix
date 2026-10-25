@@ -8,7 +8,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "tuios";
-  version = "sketch/v0.3.1";
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "Gaurav-Gosain";
