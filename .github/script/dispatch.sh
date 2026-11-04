@@ -17,7 +17,7 @@ set -euo pipefail
 
 BASE_FILE=""
 HEAD_FILE=""
-REPO="lonerOrz/nyx-loner"
+REPO="lonerOrz/loneros-nur"
 PR=""
 WORKFLOW_REPO="lonerOrz/nixpkgs-review-gha"
 WORKFLOW_FILE="build-pr.yml"
@@ -73,20 +73,57 @@ AUTH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
 # -----------------------------
 # 1. Calculate Diff & Deduplicate
 # -----------------------------
+# Fingerprint shape: { pkg: { system: drvPath, ... }, ... }
+# A package is "changed" when:
+#   - it is entirely new in head (absent from base), OR
+#   - on a system present in BOTH base and head, its drvPath differs, OR
+#   - head builds it on a system that base did NOT build at all (e.g. the
+#     flake newly declares aarch64-darwin) — that system is a new build target
+#     and must be built.
+# Merely sharing the same systems with identical drvPaths is NOT a change.
 # If multiple packages map to the same drvPath (e.g. mesa_git, mesa32_git),
 # we only dispatch one build to avoid redundancy.
+#
+# Base/head may be produced by different scan.sh versions: the old one emitted
+# a FLAT { pkg: drv } (implicitly x86_64-linux), the new one emits the nested
+# { pkg: { system: drv } }. Normalize both to the nested form so the diff works
+# regardless of which scan.sh built the fingerprint.
+NORMALIZE='
+  # ($in) is a fingerprint; wrap flat entries under x86_64-linux.
+  (if type == "object"
+   then with_entries(
+     if (.value | type) == "string"
+     then { key: .key, value: { "x86_64-linux": .value } }
+     else .
+     end)
+   else . end)
+'
 CHANGED_PKGS_RAW=$(jq -r -n \
   --slurpfile base "$BASE_FILE" \
   --slurpfile head "$HEAD_FILE" '
-  ($base[0]) as $b |
-  $head[0]
-  | to_entries
-  | map(select(.value != null))                      # avoid null drvPath issues
-  | map(select(.value != ($b[.key] // null)))
-  | sort_by(.value)                                  # REQUIRED before group_by
-  | group_by(.value)
-  | map(.[0].key)
-  | sort[]
+  ($base[0] | '"$NORMALIZE"') as $b |
+  ($head[0] | '"$NORMALIZE"') as $h
+  | ($h | keys) as $pkgs
+  | $pkgs
+  | map(. as $p | select(
+      # package is brand new in head
+      (($b[$p] // null) == null)
+      or
+      # a system shared by both has a different drvPath in head
+      (($h[$p] | to_entries
+        | map(select(.key as $s | ($b[$p][$s] != null)))
+        | map(.value != ($b[$p][.key]))) | any)
+      or
+      # a system built in head but never in base => new build target
+      (($h[$p] | to_entries | map(.key)) as $hs
+        | ($b[$p]? | keys // []) as $bs
+        | ($hs - $bs) != [])
+    ))
+  | sort
+  | unique
+  | group_by((. as $p | $h[$p] | to_entries | map(.value) | sort | join(",")))
+  | map(.[0])
+  | .[]
 ')
 
 if [[ -z "$CHANGED_PKGS_RAW" ]]; then
@@ -140,6 +177,7 @@ echo "→ Dispatching: ${VALID_PKGS[*]}"
 # cleanup temp file on exit
 cleanup() {
   [[ -n "${RESPONSE:-}" && -f "$RESPONSE" ]] && rm -f "$RESPONSE"
+  return 0
 }
 trap cleanup EXIT
 
@@ -147,26 +185,46 @@ trap cleanup EXIT
 DISPATCH_URL="https://api.github.com/repos/${WORKFLOW_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches"
 PACKAGES_CSV=$(IFS=','; echo "${VALID_PKGS[*]}")
 
-# CRITICAL: inputs values MUST be strings
+# CRITICAL: inputs values MUST be strings.
+# The set of systems is whatever the flake declares (scan.sh scans exactly
+# flake.packages' attribute names), so derive the switches from the head
+# fingerprint rather than hardcoding them. Linux builds run natively; darwin
+# builds use the sandbox-relaxed mode (the downstream runner provides macOS).
 payload=$(jq -n \
   --arg repo "$REPO" \
   --arg pr "$PR" \
   --arg pkgs "$PACKAGES_CSV" \
   --arg ref "$REF" \
-  '{
-    ref: $ref,
-    inputs: {
-      repo: $repo,
-      "pr-number": $pr,
-      packages: $pkgs,
-      "post-result": "true",
-      "upload-cachix": "true",
-      "x86_64-linux": "true",
-      "aarch64-linux": "false",
-      "x86_64-darwin": "no",
-      "aarch64-darwin": "no"
-    }
-  }')
+  --slurpfile head "$HEAD_FILE" \
+  '
+    # every system key present across all packages = flake-declared systems
+    (reduce $head[0][] as $pkg ({}; . + $pkg) | keys) as $systems
+    | ($systems | map(select(test("darwin$")))) as $darwin
+    | ($systems - $darwin) as $linux
+    # Drive every switch explicitly: a system the flake declares gets its
+    # real value (linux -> true, darwin -> sandbox-relaxed), and any of the
+    # four known systems the flake does NOT declare is sent as "no". This is
+    # required because the downstream build-pr.yml defaults unset darwin
+    # choices to yes_sandbox_relaxed; omitting them would build unwanted
+    # systems (e.g. x86_64-darwin, which this repo never targets).
+    | ( [ $linux[], $darwin[] ] ) as $declared
+    | ( [ "x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin" ]
+        | map(. as $s | {
+            key: $s,
+            val: ( if ($linux | index($s)) != null then "true"
+                   else if ($darwin | index($s)) != null then "yes_sandbox_relaxed"
+                   else "no" end end )
+          }) )
+    | map(. as $o | { ($o.key): $o.val }) | add as $sysInputs
+    | {
+        ref: $ref,
+        inputs: (
+          { repo: $repo, "pr-number": $pr, packages: $pkgs,
+            "post-result": "true", "upload-cachix": "true" }
+          + $sysInputs
+        )
+      }
+  ')
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "$payload" | jq .
