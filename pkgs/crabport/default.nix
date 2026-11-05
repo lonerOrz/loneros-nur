@@ -10,16 +10,24 @@ let
   current = lib.trivial.importJSON ./version.json;
   version = current.version;
 
-  sourceMap = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/chi11321/CrabPort/releases/download/v${version}/CrabPort-v${version}-linux-x86_64.AppImage";
-      hash = current.x86_64-linux-hash;
-    };
-    aarch64-linux = fetchurl {
-      url = "https://github.com/chi11321/CrabPort/releases/download/v${version}/CrabPort-v${version}-linux-aarch64.AppImage";
-      hash = current.aarch64-linux-hash;
-    };
+  # Upstream asset names spell the arch differently than nix system names.
+  assetArch = {
+    x86_64-linux = "x86_64";
+    aarch64-linux = "aarch64";
   };
+
+  releaseBase = "https://github.com/chi11321/CrabPort/releases/download";
+
+  # "$VERSION" stays literal in Nix strings, so the updater can substitute it.
+  urlFor = v: system: "${releaseBase}/v${v}/CrabPort-v${v}-linux-${assetArch.${system}}.AppImage";
+
+  sourceMap = lib.mapAttrs (
+    system: _:
+    fetchurl {
+      url = urlFor version system;
+      hash = current.${system + "-hash"};
+    }
+  ) assetArch;
 in
 appimageTools.wrapType2 (finalAttrs: {
   pname = "crabport";
@@ -32,14 +40,30 @@ appimageTools.wrapType2 (finalAttrs: {
     cp -r ${finalAttrs.contents}/usr/share/icons $out/share/
   '';
 
-  passthru.updateScript = callPackage ../../utils/update.nix {
-    pname = "crabport";
-    versionFile = "pkgs/crabport/version.json";
-    fetchMetaCommand = "${(callPackage ../../utils/fetcher.nix { }).githubRelease {
-      owner = "chi11321";
-      repo = "CrabPort";
-    }}";
-  };
+  # fetch-urls.nix prefetches every hashUrls entry, so both platforms refresh together.
+  passthru.updateScript =
+    let
+      versionFile = "pkgs/crabport/version.json";
+    in
+    callPackage ../../utils/update.nix {
+      pname = "crabport";
+      inherit versionFile;
+      updateMethod = "none";
+      fetchMetaCommand = "${lib.getExe (
+        callPackage ../../utils/fetch-urls.nix {
+          inherit versionFile;
+          versionCommand = ''
+            ${
+              (callPackage ../../utils/fetcher.nix { }).githubRelease {
+                owner = "chi11321";
+                repo = "CrabPort";
+              }
+            } | jq -r '.version'
+          '';
+          hashUrls = lib.mapAttrs (system: _: urlFor "$VERSION" system) assetArch;
+        }
+      )}";
+    };
 
   meta = {
     description = "Modern, cross-platform SSH / SFTP client built with Rust and GPUI";
