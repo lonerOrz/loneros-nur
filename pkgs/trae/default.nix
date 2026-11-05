@@ -84,7 +84,7 @@ let
     "${baseUrl}/${buildId}/linux/TRAE-linux-${arch}.deb";
 
   src = fetchurl {
-    url = debUrl system version;
+    url = debUrl system buildId;
     hash = current.${system + "-hash"};
   };
 
