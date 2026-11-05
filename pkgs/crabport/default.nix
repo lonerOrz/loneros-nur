@@ -8,9 +8,13 @@
 
 let
   current = lib.trivial.importJSON ./version.json;
+
+  pname = "crabport";
   version = current.version;
 
-  # Upstream asset names spell the arch differently than nix system names.
+  versionFile = "pkgs/crabport/version.json";
+
+  # Map Nix system names to upstream asset architecture names.
   assetArch = {
     x86_64-linux = "x86_64";
     aarch64-linux = "aarch64";
@@ -18,9 +22,30 @@ let
 
   releaseBase = "https://github.com/chi11321/CrabPort/releases/download";
 
-  # "$VERSION" stays literal in Nix strings, so the updater can substitute it.
-  urlFor = v: system: "${releaseBase}/v${v}/CrabPort-v${v}-linux-${assetArch.${system}}.AppImage";
+  # Generate the upstream AppImage URL.
+  urlFor =
+    version: system:
+    let
+      arch = assetArch.${system} or (throw "crabport: unsupported system: ${system}");
+    in
+    "${releaseBase}/v${version}/CrabPort-v${version}-linux-${arch}.AppImage";
 
+  # Generate URL templates for all supported systems.
+  hashUrls = lib.mapAttrs (system: _: urlFor "@VERSION@" system) assetArch;
+
+  # Fetch the latest upstream GitHub Release version.
+  templateCommands = {
+    VERSION = ''
+      ${
+        (callPackage ../../utils/fetcher.nix { }).githubRelease {
+          owner = "chi11321";
+          repo = "CrabPort";
+        }
+      } | jq -er '.version'
+    '';
+  };
+
+  # Prepare source derivations for every supported architecture.
   sourceMap = lib.mapAttrs (
     system: _:
     fetchurl {
@@ -28,48 +53,39 @@ let
       hash = current.${system + "-hash"};
     }
   ) assetArch;
+
+  system = stdenv.hostPlatform.system;
 in
 appimageTools.wrapType2 (finalAttrs: {
-  pname = "crabport";
-  inherit version;
+  inherit pname version;
 
-  src = sourceMap.${stdenv.hostPlatform.system};
+  src = sourceMap.${system} or (throw "crabport: unsupported system: ${system}");
 
   extraInstallCommands = ''
-    install -Dm644 ${finalAttrs.contents}/CrabPort.desktop $out/share/applications/CrabPort.desktop
+    install -Dm644 \
+      ${finalAttrs.contents}/CrabPort.desktop \
+      $out/share/applications/CrabPort.desktop
+
     cp -r ${finalAttrs.contents}/usr/share/icons $out/share/
   '';
 
-  # fetch-urls.nix prefetches every hashUrls entry, so both platforms refresh together.
-  passthru.updateScript =
-    let
-      versionFile = "pkgs/crabport/version.json";
-    in
-    callPackage ../../utils/update.nix {
-      pname = "crabport";
-      inherit versionFile;
-      updateMethod = "none";
-      fetchMetaCommand = "${lib.getExe (
-        callPackage ../../utils/fetch-urls.nix {
-          inherit versionFile;
-          versionCommand = ''
-            ${
-              (callPackage ../../utils/fetcher.nix { }).githubRelease {
-                owner = "chi11321";
-                repo = "CrabPort";
-              }
-            } | jq -r '.version'
-          '';
-          hashUrls = lib.mapAttrs (system: _: urlFor "$VERSION" system) assetArch;
-        }
-      )}";
-    };
+  passthru.updateScript = callPackage ../../utils/update.nix {
+    inherit pname versionFile;
+
+    updateMethod = "none";
+
+    fetchMetaCommand = lib.getExe (
+      callPackage ../../utils/fetch-urls.nix {
+        inherit versionFile templateCommands hashUrls;
+      }
+    );
+  };
 
   meta = {
     description = "Modern, cross-platform SSH / SFTP client built with Rust and GPUI";
     homepage = "https://github.com/chi11321/CrabPort";
     license = lib.licenses.asl20;
-    platforms = builtins.attrNames sourceMap;
+    platforms = builtins.attrNames assetArch;
     maintainers = with lib.maintainers; [ lonerOrz ];
     mainProgram = finalAttrs.pname;
   };

@@ -6,11 +6,16 @@
   callPackage,
   ...
 }:
+
 let
   current = lib.trivial.importJSON ./version.json;
+
+  pname = "helium";
   version = current.version;
 
-  # Upstream asset names spell the arch differently than nix system names.
+  versionFile = "pkgs/helium/version.json";
+
+  # Map Nix system names to upstream asset architecture names.
   assetArch = {
     x86_64-linux = "x86_64";
     aarch64-linux = "arm64";
@@ -18,9 +23,30 @@ let
 
   releaseBase = "https://github.com/imputnet/helium-linux/releases/download";
 
-  # "$VERSION" stays literal in Nix strings, so the updater can substitute it.
-  urlFor = v: system: "${releaseBase}/${v}/helium-${v}-${assetArch.${system}}.AppImage";
+  # Generate the upstream AppImage URL.
+  urlFor =
+    version: system:
+    let
+      arch = assetArch.${system} or (throw "helium: unsupported system: ${system}");
+    in
+    "${releaseBase}/${version}/helium-${version}-${arch}.AppImage";
 
+  # Generate URL templates for all supported systems.
+  hashUrls = lib.mapAttrs (system: _: urlFor "@VERSION@" system) assetArch;
+
+  # Fetch the latest upstream GitHub Release version.
+  templateCommands = {
+    VERSION = ''
+      ${
+        (callPackage ../../utils/fetcher.nix { }).githubRelease {
+          owner = "imputnet";
+          repo = "helium-linux";
+        }
+      } | jq -er '.version'
+    '';
+  };
+
+  # Prepare source derivations for every supported architecture.
   sourceMap = lib.mapAttrs (
     system: _:
     fetchurl {
@@ -30,50 +56,41 @@ let
   ) assetArch;
 in
 appimageTools.wrapType2 (finalAttrs: {
-  pname = "helium";
-  inherit version;
+  inherit pname version;
 
-  src = sourceMap.${stdenv.hostPlatform.system};
+  src =
+    sourceMap.${stdenv.hostPlatform.system}
+      or (throw "helium: unsupported system: ${stdenv.hostPlatform.system}");
 
   extraInstallCommands = ''
     mkdir -p $out/share/{applications,lib/helium}
 
-    cp -r ${finalAttrs.contents}/opt/${finalAttrs.pname}/locales "$out/share/lib/helium"
+    cp -r ${finalAttrs.contents}/opt/${finalAttrs.pname}/locales \
+      "$out/share/lib/helium"
+
     cp -r ${finalAttrs.contents}/usr/share/* "$out/share"
 
-    cp "${finalAttrs.contents}/${finalAttrs.pname}.desktop" "$out/share/applications/"
+    cp "${finalAttrs.contents}/${finalAttrs.pname}.desktop" \
+      "$out/share/applications/"
   '';
 
-  # fetch-urls.nix prefetches every hashUrls entry, so both platforms refresh together.
-  passthru.updateScript =
-    let
-      versionFile = "pkgs/helium/version.json";
-    in
-    callPackage ../../utils/update.nix {
-      pname = "helium";
-      inherit versionFile;
-      updateMethod = "none";
-      fetchMetaCommand = "${lib.getExe (
-        callPackage ../../utils/fetch-urls.nix {
-          inherit versionFile;
-          versionCommand = ''
-            ${
-              (callPackage ../../utils/fetcher.nix { }).githubRelease {
-                owner = "imputnet";
-                repo = "helium-linux";
-              }
-            } | jq -r '.version'
-          '';
-          hashUrls = lib.mapAttrs (system: _: urlFor "$VERSION" system) assetArch;
-        }
-      )}";
-    };
+  passthru.updateScript = callPackage ../../utils/update.nix {
+    inherit pname versionFile;
+
+    updateMethod = "none";
+
+    fetchMetaCommand = lib.getExe (
+      callPackage ../../utils/fetch-urls.nix {
+        inherit versionFile templateCommands hashUrls;
+      }
+    );
+  };
 
   meta = {
     description = "Private, fast, and honest web browser based on Chromium";
     homepage = "https://github.com/imputnet/helium-chromium";
     changelog = "https://github.com/imputnet/helium-linux/releases/tag/${version}";
-    platforms = builtins.attrNames sourceMap;
+    platforms = builtins.attrNames assetArch;
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ lonerOrz ];
     mainProgram = "helium";
