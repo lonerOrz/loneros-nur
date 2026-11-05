@@ -144,6 +144,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   autoPatchelfIgnoreMissingDeps = [
     "libc.musl-x86_64.so.1"
+    "libc.musl-aarch64.so.1"
     "libwebkit2gtk-4.1.so.0"
     "libsoup-3.0.so.0"
     "libsecret-1.so.0"
