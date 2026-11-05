@@ -31,7 +31,7 @@
         let
           pkgs = import nixpkgs { inherit system; };
         in
-        pkgs.callPackage ./formatter.nix { inherit pkgs; }
+        pkgs.callPackage ./formatter.nix { }
       );
 
       legacyPackages = forAllSystems (
