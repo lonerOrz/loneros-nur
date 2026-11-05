@@ -7,21 +7,26 @@
   tree,
   callPackage,
 }:
+
 let
   current = lib.trivial.importJSON ./version.json;
   version = current.version;
 
-  sourceMap = {
-    x86_64-linux = fetchurl {
-      url = "https://api.fluxer.app/dl/desktop/stable/linux/x64/latest/appimage";
-      hash = current.x86_64-linux-hash;
-    };
-
-    aarch64-linux = fetchurl {
-      url = "https://api.fluxer.app/dl/desktop/stable/linux/arm64/latest/appimage";
-      hash = current.aarch64-linux-hash;
-    };
+  # Centralized download URLs
+  urls = {
+    x86_64-linux = "https://api.fluxer.app/dl/desktop/stable/linux/x64/latest/appimage";
+    aarch64-linux = "https://api.fluxer.app/dl/desktop/stable/linux/arm64/latest/appimage";
   };
+
+  # Fetch sources for each supported architecture
+  sourceMap = lib.mapAttrs (
+    system: url:
+    fetchurl {
+      inherit url;
+      hash = current.${system + "-hash"};
+    }
+  ) urls;
+
 in
 appimageTools.wrapType2 (finalAttrs: {
   pname = "fluxer";
@@ -77,16 +82,16 @@ appimageTools.wrapType2 (finalAttrs: {
       fetchMetaCommand = "${lib.getExe (
         callPackage ../../utils/fetch-urls.nix {
           inherit versionFile;
+
           versionCommand = ''
-            curl -sIL "https://api.fluxer.app/dl/desktop/stable/linux/x64/latest/appimage" \
+            curl -sIL "${builtins.getAttr "x86_64-linux" urls}" \
               | grep -i "^x-fluxer-version:" \
               | awk '{print $2}' \
               | tr -d '\r'
           '';
-          hashUrls = {
-            x86_64-linux = "https://api.fluxer.app/dl/desktop/stable/linux/x64/latest/appimage";
-            aarch64-linux = "https://api.fluxer.app/dl/desktop/stable/linux/arm64/latest/appimage";
-          };
+
+          # Reuse the same URLs as the package sources
+          hashUrls = urls;
         }
       )}";
     };
