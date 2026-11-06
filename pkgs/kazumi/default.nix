@@ -36,16 +36,13 @@ let
 
   echDeps = lib.importJSON ./ech-http-deps.json;
 
-  echTarget =
-    {
-      x86_64-linux = "linux-x64";
-      aarch64-linux = "linux-arm64";
-    }
-    .${stdenv.hostPlatform.system}
+  echDep =
+    echDeps.${stdenv.hostPlatform.system}
       or (throw "kazumi: unsupported platform ${stdenv.hostPlatform.system}");
+  echTarget = echDep.target;
 
   echDepsSdk = fetchurl {
-    inherit (echDeps.${echTarget}) url hash;
+    inherit (echDep) url hash;
   };
 in
 flutter.buildFlutterApplication {
@@ -53,7 +50,7 @@ flutter.buildFlutterApplication {
   inherit version src;
 
   pubspecLock = lib.importJSON ./pubspec.lock.json;
-  gitHashes = lib.importJSON ./gitHashes.json;
+  gitHashes = lib.importJSON ./git-hashes.json;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -196,9 +193,6 @@ flutter.buildFlutterApplication {
     mainProgram = "kazumi";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.lonerOrz ];
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+    platforms = lib.attrNames echDeps;
   };
 }
