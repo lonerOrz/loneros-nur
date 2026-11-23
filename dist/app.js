@@ -1,14 +1,57 @@
+const root = document.documentElement;
+const themeToggle = document.getElementById("theme-toggle");
+const themeColor = document.querySelector('meta[name="theme-color"]');
+
+const applyTheme = (theme) => {
+  root.dataset.theme = theme;
+  themeColor.content = theme === "dark" ? "#0a0e17" : "#f7f9fc";
+  themeToggle.setAttribute(
+    "aria-label",
+    theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
+  );
+};
+
+applyTheme(root.dataset.theme || "dark");
+
+themeToggle.addEventListener("click", () => {
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(next);
+  refreshPalette();
+  try {
+    localStorage.setItem("theme", next);
+  } catch {
+    // Storage may be unavailable; the theme still applies for this session.
+  }
+});
+
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+darkQuery.addEventListener("change", (e) => {
+  try {
+    if (localStorage.getItem("theme")) return;
+  } catch {
+    return;
+  }
+  applyTheme(e.matches ? "dark" : "light");
+  refreshPalette();
+});
+
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
-const COLORS = [
-  [126, 181, 255],
-  [62, 213, 152],
-];
+const particleColors = () =>
+  ["--particle-a", "--particle-b"].map((name) =>
+    getComputedStyle(root).getPropertyValue(name).trim(),
+  );
+
+const parseColor = (value) => {
+  const parts = value.match(/[\d.]+/g) || [];
+  return parts.slice(0, 3).map(Number);
+};
 const COUNT = 36;
 const LINK_DIST = 120;
 const REPEL_DIST = 100;
 
 let particles = [];
+let palette = [];
 let pointer = { x: -1e4, y: -1e4 };
 let paused = false;
 
@@ -25,12 +68,20 @@ function makeParticle() {
     vy: (Math.random() - 0.5) * 0.14,
     r: Math.random() * 1.2 + 0.6,
     a: Math.random() * 0.16 + 0.1,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    color: Math.floor(Math.random() * palette.length),
   };
+}
+
+function refreshPalette() {
+  palette = particleColors().map(parseColor);
+  for (const p of particles) {
+    p.color = Math.floor(Math.random() * palette.length);
+  }
 }
 
 function init() {
   resize();
+  palette = particleColors().map(parseColor);
   particles = Array.from({ length: COUNT }, makeParticle);
 }
 
@@ -54,7 +105,7 @@ function frame() {
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.color},${p.a})`;
+      ctx.fillStyle = `rgba(${palette[p.color]},${p.a})`;
       ctx.fill();
     }
 
@@ -67,7 +118,7 @@ function frame() {
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = `rgba(${a.color},${(1 - d / LINK_DIST) * 0.07})`;
+        ctx.strokeStyle = `rgba(${palette[a.color]},${(1 - d / LINK_DIST) * 0.07})`;
         ctx.lineWidth = 0.6;
         ctx.stroke();
       }
@@ -98,13 +149,17 @@ document.addEventListener("visibilitychange", () => {
 });
 
 const esc = (value) =>
-  String(value).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  })[c]);
+  String(value).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
+  );
 
 const licenseName = (license) => {
   if (!license) return "unknown";
@@ -113,40 +168,53 @@ const licenseName = (license) => {
   return license.shortName || license.spdxId || license.fullName || "unknown";
 };
 
-const copyCommand = async (button, name) => {
+const toast = document.getElementById("copy-toast");
+let toastTimer;
+
+const showToast = (message, isError = false) => {
+  clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.toggleAttribute("data-error", isError);
+  toast.classList.add("visible");
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), 1800);
+};
+
+const copyCommand = async (name) => {
+  const command = `nix run github:lonerOrz/loneros-nur#${name}`;
   try {
-    await navigator.clipboard.writeText(`nix run github:lonerOrz/loneros-nur#${name}`);
-    button.dataset.copied = "";
-    button.textContent = "Copied";
-    setTimeout(() => {
-      delete button.dataset.copied;
-      button.textContent = "nix run";
-    }, 1600);
+    await navigator.clipboard.writeText(command);
+    showToast(`Copied ${name}`);
   } catch {
-    button.textContent = "Copy failed";
-    setTimeout(() => {
-      button.textContent = "nix run";
-    }, 1600);
+    showToast("Copy failed", true);
   }
 };
 
-const columns = ["Package", "Version", "License", "Description", "Usage", "Links"];
+const columns = [
+  "Package",
+  "Version",
+  "License",
+  "Description",
+  "Usage",
+  "Links",
+];
 
 function render(rows) {
   const body = document.getElementById("packages-body");
-  body.innerHTML = rows.map((pkg) => {
-    const cells = [
-      `<code>${esc(pkg.name)}</code>`,
-      `<span class="version">${esc(pkg.version || "—")}</span>`,
-      `<span class="badge">${esc(licenseName(pkg.license))}</span>`,
-      `<span class="description">${esc(pkg.description || "")}</span>`,
-      `<button class="install" type="button" data-name="${esc(pkg.name)}">nix run</button>`,
-      pkg.homepage
-        ? `<a class="link" href="${esc(pkg.homepage)}" target="_blank" rel="noopener">Homepage</a>`
-        : `<span class="description">—</span>`,
-    ];
-    return `<tr>${cells.map((c, i) => `<td data-label="${columns[i]}">${c}</td>`).join("")}</tr>`;
-  }).join("");
+  body.innerHTML = rows
+    .map((pkg) => {
+      const cells = [
+        `<code>${esc(pkg.name)}</code>`,
+        `<span class="version">${esc(pkg.version || "—")}</span>`,
+        `<span class="badge">${esc(licenseName(pkg.license))}</span>`,
+        `<span class="description">${esc(pkg.description || "")}</span>`,
+        `<button class="install" type="button" data-name="${esc(pkg.name)}">nix run</button>`,
+        pkg.homepage
+          ? `<a class="link" href="${esc(pkg.homepage)}" target="_blank" rel="noopener">Homepage</a>`
+          : `<span class="description">—</span>`,
+      ];
+      return `<tr>${cells.map((c, i) => `<td data-label="${columns[i]}">${c}</td>`).join("")}</tr>`;
+    })
+    .join("");
 
   document.getElementById("empty-state").hidden = rows.length > 0;
   document.getElementById("package-count").textContent = rows.length;
@@ -165,12 +233,16 @@ async function main() {
   } catch {
     const empty = document.getElementById("empty-state");
     empty.hidden = false;
-    empty.textContent = "Failed to load packages.json. Serve this directory over HTTP.";
+    empty.textContent =
+      "Failed to load packages.json. Serve this directory over HTTP.";
     return;
   }
 
   const apply = () => {
-    const query = document.getElementById("search-input").value.toLowerCase().trim();
+    const query = document
+      .getElementById("search-input")
+      .value.toLowerCase()
+      .trim();
     shown = all
       .filter((pkg) =>
         [pkg.name, pkg.version, pkg.description, licenseName(pkg.license)]
@@ -223,7 +295,7 @@ async function main() {
 
   document.getElementById("packages-body").addEventListener("click", (e) => {
     const button = e.target.closest(".install");
-    if (button) copyCommand(button, button.dataset.name);
+    if (button) copyCommand(button.dataset.name);
   });
 
   headers[0].setAttribute("aria-sort", "ascending");
